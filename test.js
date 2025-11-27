@@ -129,3 +129,31 @@ function cleanup() {
     process.stdout.write(reset);
     process.stdout.write('\n');
 }
+
+// allow user to trigger fireworks or quit with keyboard
+if (process.stdin && process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.on('data', (buf) => {
+        const s = buf.toString();
+        if (s === '\u0003' || s === 'q' || s === 'Q') {
+            cleanup();
+            process.exit(0);
+        } else {
+            // any other key spawns an extra firework
+            spawnFirework();
+        }
+    });
+}
+
+// ensure cleanup on unexpected errors
+process.on('uncaughtException', (err) => {
+    cleanup();
+    console.error(err && err.stack || err);
+    process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+    cleanup();
+    console.error('Unhandled Rejection:', reason);
+    process.exit(1);
+});
