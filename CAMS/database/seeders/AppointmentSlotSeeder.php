@@ -15,18 +15,20 @@ class AppointmentSlotSeeder extends Seeder
 
         foreach ($advisors as $advisor) {
             // Create 5 slots for each advisor
+            $randomDay1 = rand(1, 7);
             AppointmentSlot::create([
                 'advisor_id' => $advisor->id,
-                'start_time' => now()->addDays(rand(1, 7))->setTime(10, 0), // Random day next week at 10 AM
-                'end_time'   => now()->addDays(rand(1, 7))->setTime(11, 0),
+                'start_time' => now()->addDays($randomDay1)->setTime(10, 0), // Random day next week at 10 AM
+                'end_time'   => now()->addDays($randomDay1)->setTime(11, 0),
                 'status'     => 'active',
                 'is_recurring' => false,
             ]);
 
+            $randomDay2 = rand(1, 7);
             AppointmentSlot::create([
                 'advisor_id' => $advisor->id,
-                'start_time' => now()->addDays(rand(1, 7))->setTime(14, 0), // Random day next week at 2 PM
-                'end_time'   => now()->addDays(rand(1, 7))->setTime(15, 0),
+                'start_time' => now()->addDays($randomDay2)->setTime(14, 0), // Random day next week at 2 PM
+                'end_time'   => now()->addDays($randomDay2)->setTime(15, 0),
                 'status'     => 'active',
                 'is_recurring' => false,
             ]);
