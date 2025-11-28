@@ -8,37 +8,45 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Create an Admin
+        // 1. Create Specific Users for Login Testing (Keep these!)
+        // Admin
         User::create([
-            'name' => 'Admin User',
+            'name' => 'Super Admin',
             'email' => 'admin@uiu.ac.bd',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'university_id' => 'ADMIN-01',
+            'department_id' => 1,
         ]);
 
-        // 2. Create an Advisor (Teacher)
+        // Specific Student
         User::create([
-            'name' => 'Dr. Advisor',
-            'email' => 'advisor@uiu.ac.bd',
-            'password' => Hash::make('password'),
-            'role' => 'advisor',
-            'university_id' => 'T-5050',
-            'department_id' => 1, // CSE
-        ]);
-
-        // 3. Create a Student
-        User::create([
-            'name' => 'Student User',
-            'email' => 'student@uiu.ac.bd',
+            'name' => 'Shaan Student',
+            'email' => 'shaan@uiu.ac.bd',
             'password' => Hash::make('password'),
             'role' => 'student',
-            'university_id' => '01123456',
-            'department_id' => 1, // CSE
+            'university_id' => '011223001',
+            'department_id' => 1,
         ]);
+
+        // Specific Advisor
+        User::create([
+            'name' => 'Dr. Nabila Advisor',
+            'email' => 'nabila@uiu.ac.bd',
+            'password' => Hash::make('password'),
+            'role' => 'advisor',
+            'university_id' => 'T-9090',
+            'department_id' => 1,
+        ]);
+
+        // 2. Generate Bulk Fake Data (The "Factory" Magic)
+
+        // Create 10 Random Advisors
+        User::factory()->count(10)->advisor()->create();
+
+        // Create 20 Random Students
+        User::factory()->count(20)->create();
     }
 }
