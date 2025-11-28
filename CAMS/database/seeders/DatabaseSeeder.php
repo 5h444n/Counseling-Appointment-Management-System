@@ -12,10 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call the other seeders here
         $this->call([
-            DepartmentSeeder::class,
-            UserSeeder::class,
+            DepartmentSeeder::class,     // Runs first
+            UserSeeder::class,           // Creates users
+            AppointmentSlotSeeder::class // Creates slots for those users
         ]);
     }
 }
