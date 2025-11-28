@@ -5,8 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
-class EnsureUserIsAdvisor
+class IsStudent
 {
     /**
      * Handle an incoming request.
@@ -15,6 +16,12 @@ class EnsureUserIsAdvisor
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        // Check if user is logged in AND is a student
+        if (Auth::check() && Auth::user()->role === 'student') {
+            return $next($request);
+        }
+
+        // If not, kick them out (403 Forbidden)
+        abort(403, 'Access Denied: Students Only.');
     }
 }
