@@ -18,24 +18,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Student Only Area
-Route::middleware(['auth', 'student'])->group(function () {
-    Route::get('/student-dashboard', function () {
-        return "Welcome, Student! (You are safe here)";
-    });
-});
-
-// Advisor Only Area
-Route::middleware(['auth', 'advisor'])->group(function () {
-    Route::get('/advisor-dashboard', function () {
-        return "Welcome, Advisor! (Students cannot see this)";
-    });
-});
-
-// Admin Only Area
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin-dashboard', function () {
-        return "Welcome, Boss! (Admin Area)";
-    });
-});
