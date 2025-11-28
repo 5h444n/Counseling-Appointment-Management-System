@@ -49,6 +49,18 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'advisor')
+                <x-responsive-nav-link :href="'#'" :active="request()->routeIs('advisor.slots')">
+                    {{ __('My Availability') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->role === 'student')
+                <x-responsive-nav-link :href="'#'">
+                    {{ __('Book Appointment') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
