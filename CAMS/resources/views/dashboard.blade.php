@@ -65,7 +65,7 @@
                 </a>
 
                 @if(Auth::user()->role === 'advisor')
-                    <a href="#" class="flex items-center p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-all group cursor-pointer">
+                    <a href="{{ route('advisor.slots') }}" class="flex items-center p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-all group cursor-pointer">
                         <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
