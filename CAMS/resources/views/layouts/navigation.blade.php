@@ -51,13 +51,13 @@
             </x-responsive-nav-link>
 
             @if(Auth::user()->role === 'advisor')
-                <x-responsive-nav-link href="#">
+                <x-responsive-nav-link :href="'#'" :active="request()->routeIs('advisor.slots')">
                     {{ __('My Availability') }}
                 </x-responsive-nav-link>
             @endif
 
             @if(Auth::user()->role === 'student')
-                <x-responsive-nav-link href="#">
+                <x-responsive-nav-link :href="'#'">
                     {{ __('Book Appointment') }}
                 </x-responsive-nav-link>
             @endif
