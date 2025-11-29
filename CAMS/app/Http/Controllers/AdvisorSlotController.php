@@ -54,17 +54,28 @@ class AdvisorSlotController extends Controller
 
             $slotEnd = $start->copy()->addMinutes($duration);
 
-            AppointmentSlot::create([
-                'advisor_id' => $advisorId,
-                'start_time' => $start,
-                'end_time' => $slotEnd,
-                'status' => 'active',
-                'is_recurring' => false,
-            ]);
+            // Check for overlapping or duplicate slots
+            $overlap = AppointmentSlot::where('advisor_id', $advisorId)
+                ->where('status', 'active')
+                ->where(function($query) use ($start, $slotEnd) {
+                    $query->where('start_time', '<', $slotEnd)
+                          ->where('end_time', '>', $start);
+                })
+                ->exists();
+
+            if (!$overlap) {
+                AppointmentSlot::create([
+                    'advisor_id' => $advisorId,
+                    'start_time' => $start->copy(),
+                    'end_time' => $slotEnd,
+                    'status' => 'active',
+                    'is_recurring' => false,
+                ]);
+                $count++;
+            }
 
             // Move the start time forward
             $start->addMinutes($duration);
-            $count++;
         }
 
         return redirect()->back()->with('success', "Successfully generated {$count} slots for {$date}.");
