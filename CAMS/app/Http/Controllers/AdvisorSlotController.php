@@ -48,19 +48,22 @@ class AdvisorSlotController extends Controller
 
         $count = 0;
 
-        // 3. Loop: Create slots until we hit the end time
+        // 3. Fetch all existing overlapping slots once before the loop
+        $existingSlots = AppointmentSlot::where('advisor_id', $advisorId)
+            ->where('status', 'active')
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start)
+            ->get();
+
+        // 4. Loop: Create slots until we hit the end time
         while ($start->copy()->addMinutes($duration)->lte($end)) {
 
             $slotEnd = $start->copy()->addMinutes($duration);
 
-            // Check for overlapping or duplicate slots
-            $overlap = AppointmentSlot::where('advisor_id', $advisorId)
-                ->where('status', 'active')
-                ->where(function($query) use ($start, $slotEnd) {
-                    $query->where('start_time', '<', $slotEnd)
-                          ->where('end_time', '>', $start);
-                })
-                ->exists();
+            // Check for overlapping or duplicate slots in memory
+            $overlap = $existingSlots->first(function($slot) use ($start, $slotEnd) {
+                return $slot->start_time < $slotEnd && $slot->end_time > $start;
+            });
 
             if (!$overlap) {
                 AppointmentSlot::create([
