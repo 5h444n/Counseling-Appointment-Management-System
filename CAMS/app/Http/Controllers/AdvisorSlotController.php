@@ -26,10 +26,13 @@ class AdvisorSlotController extends Controller
 
     /**
      * Store new slots (The "Splitter" Logic).
+     * Note: Date validation uses the server's configured timezone (UTC by default).
+     * The view displays a message informing users about the timezone.
      */
     public function store(Request $request)
     {
         // 1. Validate Input
+        // Note: 'after_or_equal:today' uses the server's configured timezone (UTC by default)
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required',

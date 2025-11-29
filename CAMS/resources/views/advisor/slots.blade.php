@@ -34,8 +34,9 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input type="date" name="date" required min="{{ date('Y-m-d') }}"
+                                <input type="date" name="date" id="date-input" required
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
+                                <p class="text-xs text-gray-400 mt-1">Date selection based on your local time. All times are processed in {{ config('app.timezone') }}.</p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
@@ -132,4 +133,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Set min date based on user's local timezone to avoid timezone mismatch issues
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date-input');
+            if (dateInput) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.min = `${year}-${month}-${day}`;
+            }
+        });
+    </script>
 </x-app-layout>
