@@ -73,6 +73,15 @@ class StudentBookingController extends Controller
             return back()->with('error', 'Sorry, this slot was just taken.');
         }
 
+        // Check if student has already booked this slot
+        $existingBooking = Appointment::where('student_id', Auth::id())
+            ->where('slot_id', $slot->id)
+            ->exists();
+
+        if ($existingBooking) {
+            return back()->with('error', 'You have already booked this slot.');
+        }
+
         // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
         $deptCode = Auth::user()->department?->code ?? 'GEN';
         $token = strtoupper($deptCode . '-' . Str::random(8));
