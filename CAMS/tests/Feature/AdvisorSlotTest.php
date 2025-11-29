@@ -251,4 +251,27 @@ class AdvisorSlotTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    /**
+     * Test that no slots are created when time range is too short.
+     */
+    public function test_returns_error_when_time_range_too_short_for_slots(): void
+    {
+        $advisor = User::factory()->advisor()->create();
+        $futureDate = Carbon::tomorrow()->format('Y-m-d');
+
+        $response = $this
+            ->actingAs($advisor)
+            ->from('/advisor/slots')
+            ->post('/advisor/slots', [
+                'date' => $futureDate,
+                'start_time' => '09:00',
+                'end_time' => '09:29', // Too short for 30-minute slot
+                'duration' => 30,
+            ]);
+
+        $response->assertRedirect('/advisor/slots');
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('appointment_slots', 0);
+    }
 }

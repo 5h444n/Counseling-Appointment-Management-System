@@ -77,6 +77,10 @@ class AdvisorSlotController extends Controller
             $start->addMinutes($duration);
         }
 
+        if ($count === 0) {
+            return redirect()->back()->with('error', "No slots could be generated. The time range may be too short for the selected duration, or all slots overlap with existing availability.");
+        }
+
         return redirect()->back()->with('success', "Successfully generated {$count} slots for {$date}.");
     }
 
