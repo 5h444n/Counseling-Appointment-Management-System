@@ -89,7 +89,7 @@ class StudentBookingController extends Controller
             // Check if student has already booked this slot (excluding terminal statuses)
             $existingBooking = Appointment::where('student_id', Auth::id())
                 ->where('slot_id', $lockedSlot->id)
-                ->whereNotIn('status', ['cancelled', 'declined', 'completed'])
+                ->whereNotIn('status', ['cancelled', 'declined', 'completed', 'no_show'])
                 ->exists();
 
             if ($existingBooking) {
