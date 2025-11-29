@@ -19,7 +19,7 @@
             <h1 class="text-4xl font-bold tracking-wider text-white">
                 CAMS <span class="text-orange-500">UIU</span>
             </h1>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Counseling Portal</p>
+            <p class="text-xs text-gray-300 uppercase tracking-widest mt-1">Counseling Portal</p>
         </a>
     </div>
 
