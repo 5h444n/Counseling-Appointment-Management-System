@@ -29,7 +29,7 @@
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
+                <div class="mt-2">
                     <p class="text-sm mt-2 text-gray-800">
                         {{ __('Your email address is unverified.') }}
 
@@ -45,6 +45,17 @@
                     @endif
                 </div>
             @endif
+        </div>
+
+        <div>
+            <x-input-label for="university_id" :value="__('University ID')" />
+            <x-text-input id="university_id" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->university_id" disabled />
+            <p class="text-xs text-gray-500 mt-1">Cannot be changed. Contact Admin for corrections.</p>
+        </div>
+
+        <div>
+            <x-input-label for="department" :value="__('Department')" />
+            <x-text-input id="department" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->department->name ?? 'None'" disabled />
         </div>
 
         <div class="flex items-center gap-4">
