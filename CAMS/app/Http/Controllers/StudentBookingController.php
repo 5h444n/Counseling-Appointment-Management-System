@@ -46,7 +46,7 @@ class StudentBookingController extends Controller
      */
     public function show($advisorId)
     {
-        $advisor = User::findOrFail($advisorId);
+        $advisor = User::with('department')->findOrFail($advisorId);
 
         // Fetch only FUTURE and ACTIVE (Green) slots
         $slots = AppointmentSlot::where('advisor_id', $advisorId)

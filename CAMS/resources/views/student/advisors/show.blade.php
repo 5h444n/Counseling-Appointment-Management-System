@@ -106,6 +106,16 @@
             document.getElementById('modalDate').innerText = date;
             document.getElementById('modalTime').innerText = time;
             document.getElementById('bookingModal').classList.remove('hidden');
+
+            // Prevent double submission
+            const form = document.querySelector('#bookingModal form');
+            form.onsubmit = function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                }
+            };
         }
 
         function closeBookingModal() {
