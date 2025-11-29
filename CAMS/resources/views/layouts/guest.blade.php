@@ -27,7 +27,7 @@
         {{ $slot }}
     </div>
 
-    <div class="mt-8 text-center text-sm text-gray-500">
+    <div class="mt-8 text-center text-sm text-gray-400">
         &copy; {{ date('Y') }} United International University
     </div>
 </div>
