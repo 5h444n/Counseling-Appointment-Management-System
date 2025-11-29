@@ -75,7 +75,7 @@ class StudentBookingController extends Controller
 
         // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
         $deptCode = Auth::user()->department->code ?? 'GEN';
-        $token = strtoupper($deptCode . '-' . rand(1000, 9999) . '-' . Str::random(1));
+        $token = strtoupper($deptCode . '-' . Str::random(8));
 
         // Create Appointment
         Appointment::create([
