@@ -78,7 +78,7 @@ class StudentBookingController extends Controller
                     ->first();
 
                 if (!$slot) {
-                    throw new \Exception('Sorry, this slot was just taken.');
+                    throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Slot not available');
                 }
 
                 // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
@@ -97,8 +97,14 @@ class StudentBookingController extends Controller
                 // Lock the slot so no one else can book it
                 $slot->update(['status' => 'blocked']);
             });
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Sorry, this slot was just taken.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', 'An error occurred while booking. Please try again.');
+        }
+
+        if (!$token) {
+            return back()->with('error', 'An error occurred while booking. Please try again.');
         }
 
         return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
