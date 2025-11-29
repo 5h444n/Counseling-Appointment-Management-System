@@ -25,10 +25,13 @@ class AdvisorSlotController extends Controller
 
     /**
      * Store new slots (The "Splitter" Logic).
+     * Note: Date validation uses the server's configured timezone (UTC by default).
+     * The view displays a message informing users about the timezone.
      */
     public function store(Request $request)
     {
         // 1. Validate Input
+        // Note: 'after_or_equal:today' uses the server's configured timezone (UTC by default)
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required',
@@ -77,6 +80,10 @@ class AdvisorSlotController extends Controller
 
             // Move the start time forward
             $start->addMinutes($duration);
+        }
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', "No slots could be generated. The time range may be too short for the selected duration, or all slots overlap with existing availability.");
         }
 
         return redirect()->back()->with('success', "Successfully generated {$count} slots for {$date}.");

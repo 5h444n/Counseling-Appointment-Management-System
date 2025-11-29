@@ -33,6 +33,8 @@
                             @csrf
 
                             <div>
+                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}"
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                                 <input type="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('date') border-red-500 @enderror">
@@ -112,7 +114,10 @@
                                             <form action="{{ route('advisor.slots.destroy', $slot->id) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium" onclick="return confirm('Delete this slot?')">Delete</button>
+                                                <button type="submit"
+                                                        aria-label="Delete slot for {{ $slot->start_time->format('M d, Y h:i A') }}"
+                                                        class="text-red-500 hover:text-red-700 font-medium"
+                                                        onclick="return confirm('Delete this slot?')">Delete</button>
                                             </form>
                                         @else
                                             <span class="text-gray-400 cursor-not-allowed">Locked</span>
@@ -136,4 +141,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Set min date based on user's local timezone to avoid timezone mismatch issues
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date-input');
+            if (dateInput) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.min = `${year}-${month}-${day}`;
+            }
+        });
+    </script>
 </x-app-layout>
