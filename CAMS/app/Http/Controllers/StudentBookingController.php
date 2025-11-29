@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\AppointmentSlot;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
@@ -73,9 +74,10 @@ class StudentBookingController extends Controller
             return back()->with('error', 'Sorry, this slot was just taken.');
         }
 
-        // Check if student has already booked this slot
+        // Check if student has already booked this slot (excluding terminal statuses)
         $existingBooking = Appointment::where('student_id', Auth::id())
             ->where('slot_id', $slot->id)
+            ->whereNotIn('status', ['cancelled', 'declined', 'completed'])
             ->exists();
 
         if ($existingBooking) {
@@ -86,18 +88,27 @@ class StudentBookingController extends Controller
         $deptCode = Auth::user()->department?->code ?? 'GEN';
         $token = strtoupper($deptCode . '-' . Str::random(8));
 
-        // Create Appointment
-        Appointment::create([
-            'student_id' => Auth::id(),
-            'slot_id' => $slot->id,
-            'purpose' => $request->purpose,
-            'status' => 'pending', // Starts as Pending Approval
-            'token' => $token,
-        ]);
+        // Create Appointment within a transaction to prevent race conditions
+        return DB::transaction(function () use ($slot, $request, $token) {
+            // Re-check slot availability within transaction
+            $slot = AppointmentSlot::lockForUpdate()->findOrFail($slot->id);
+            if ($slot->status !== 'active') {
+                return back()->with('error', 'Sorry, this slot was just taken.');
+            }
 
-        // Lock the slot so no one else can book it
-        $slot->update(['status' => 'blocked']);
+            // Create Appointment
+            Appointment::create([
+                'student_id' => Auth::id(),
+                'slot_id' => $slot->id,
+                'purpose' => $request->purpose,
+                'status' => 'pending', // Starts as Pending Approval
+                'token' => $token,
+            ]);
 
-        return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
+            // Lock the slot so no one else can book it
+            $slot->update(['status' => 'blocked']);
+
+            return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
+        });
     }
 }
