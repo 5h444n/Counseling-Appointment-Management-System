@@ -38,7 +38,7 @@
                             <span class="font-mono font-bold">{{ $user->university_id ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-400">Role</span>
+                            <span class="text-gray-300">Role</span>
                             <span class="capitalize">{{ $user->role }}</span>
                         </div>
                     </div>
