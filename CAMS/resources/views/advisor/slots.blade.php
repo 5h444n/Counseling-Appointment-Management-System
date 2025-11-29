@@ -108,7 +108,10 @@
                                             <form action="{{ route('advisor.slots.destroy', $slot->id) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium" onclick="return confirm('Delete this slot?')">Delete</button>
+                                                <button type="submit"
+                                                        aria-label="Delete slot for {{ $slot->start_time->format('M d, Y h:i A') }}"
+                                                        class="text-red-500 hover:text-red-700 font-medium"
+                                                        onclick="return confirm('Delete this slot?')">Delete</button>
                                             </form>
                                         @else
                                             <span class="text-gray-400 cursor-not-allowed">Locked</span>
