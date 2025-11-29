@@ -40,7 +40,7 @@ Route::middleware(['auth', 'advisor'])->group(function () {
     // Manage Availability (The Phase 3 Work)
     Route::get('/advisor/slots', [AdvisorSlotController::class, 'index'])->name('advisor.slots');
     Route::post('/advisor/slots', [AdvisorSlotController::class, 'store'])->name('advisor.slots.store');
-    Route::delete('/advisor/slots/{id}', [AdvisorSlotController::class, 'destroy'])->name('advisor.slots.destroy');
+    Route::delete('/advisor/slots/{slot}', [AdvisorSlotController::class, 'destroy'])->name('advisor.slots.destroy');
 
 });
 
