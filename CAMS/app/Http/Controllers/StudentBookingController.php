@@ -10,6 +10,7 @@ use App\Models\Appointment;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
@@ -101,6 +102,11 @@ class StudentBookingController extends Controller
         } catch (ModelNotFoundException $e) {
             return back()->with('error', 'Sorry, this slot was just taken.');
         } catch (\Exception $e) {
+            Log::error('Appointment booking failed', [
+                'slot_id' => $request->slot_id,
+                'student_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
             return back()->with('error', 'An error occurred while booking. Please try again.');
         }
 
