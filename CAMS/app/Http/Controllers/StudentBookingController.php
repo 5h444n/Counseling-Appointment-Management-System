@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AppointmentSlot;
 use App\Models\Appointment;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -78,7 +79,7 @@ class StudentBookingController extends Controller
                     ->first();
 
                 if (!$slot) {
-                    throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Slot not available');
+                    throw new ModelNotFoundException('Slot not available');
                 }
 
                 // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
@@ -97,13 +98,9 @@ class StudentBookingController extends Controller
                 // Lock the slot so no one else can book it
                 $slot->update(['status' => 'blocked']);
             });
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return back()->with('error', 'Sorry, this slot was just taken.');
         } catch (\Exception $e) {
-            return back()->with('error', 'An error occurred while booking. Please try again.');
-        }
-
-        if (!$token) {
             return back()->with('error', 'An error occurred while booking. Please try again.');
         }
 
