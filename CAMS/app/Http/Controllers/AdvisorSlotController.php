@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
 use Carbon\Carbon;
@@ -26,10 +25,13 @@ class AdvisorSlotController extends Controller
 
     /**
      * Store new slots (The "Splitter" Logic).
+     * Note: Date validation uses the server's configured timezone (UTC by default).
+     * The view displays a message informing users about the timezone.
      */
     public function store(Request $request)
     {
         // 1. Validate Input
+        // Note: 'after_or_equal:today' uses the server's configured timezone (UTC by default)
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required',
@@ -48,19 +50,22 @@ class AdvisorSlotController extends Controller
 
         $count = 0;
 
-        // 3. Loop: Create slots until we hit the end time
+        // 3. Fetch all existing overlapping slots once before the loop
+        $existingSlots = AppointmentSlot::where('advisor_id', $advisorId)
+            ->where('status', 'active')
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start)
+            ->get();
+
+        // 4. Loop: Create slots until we hit the end time
         while ($start->copy()->addMinutes($duration)->lte($end)) {
 
             $slotEnd = $start->copy()->addMinutes($duration);
 
-            // Check for overlapping or duplicate slots
-            $overlap = AppointmentSlot::where('advisor_id', $advisorId)
-                ->where('status', 'active')
-                ->where(function($query) use ($start, $slotEnd) {
-                    $query->where('start_time', '<', $slotEnd)
-                          ->where('end_time', '>', $start);
-                })
-                ->exists();
+            // Check for overlapping or duplicate slots in memory
+            $overlap = $existingSlots->first(function($slot) use ($start, $slotEnd) {
+                return $slot->start_time < $slotEnd && $slot->end_time > $start;
+            });
 
             if (!$overlap) {
                 AppointmentSlot::create([
@@ -75,6 +80,10 @@ class AdvisorSlotController extends Controller
 
             // Move the start time forward
             $start->addMinutes($duration);
+        }
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', "No slots could be generated. The time range may be too short for the selected duration, or all slots overlap with existing availability.");
         }
 
         return redirect()->back()->with('success', "Successfully generated {$count} slots for {$date}.");
