@@ -110,6 +110,42 @@ class StudentBookingController extends Controller
             return back()->with('error', 'An error occurred while booking. Please try again.');
         }
 
+        // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
+        $deptCode = Auth::user()->department?->code ?? 'GEN';
+        $token = strtoupper($deptCode . '-' . Str::random(8));
+
+        // Create Appointment within a transaction to prevent race conditions
+        return DB::transaction(function () use ($slot, $request, $token) {
+            // Re-check slot availability within transaction with lock
+            $lockedSlot = AppointmentSlot::lockForUpdate()->findOrFail($slot->id);
+            if ($lockedSlot->status !== 'active') {
+                return back()->with('error', 'Sorry, this slot was just taken.');
+            }
+
+            // Check if student has already booked this slot (excluding terminal statuses)
+            $existingBooking = Appointment::where('student_id', Auth::id())
+                ->where('slot_id', $lockedSlot->id)
+                ->whereNotIn('status', ['cancelled', 'declined', 'completed', 'no_show'])
+                ->exists();
+
+            if ($existingBooking) {
+                return back()->with('error', 'You have already booked this slot.');
+            }
+
+            // Create Appointment
+            Appointment::create([
+                'student_id' => Auth::id(),
+                'slot_id' => $lockedSlot->id,
+                'purpose' => $request->purpose,
+                'status' => 'pending', // Starts as Pending Approval
+                'token' => $token,
+            ]);
+
+            // Lock the slot so no one else can book it
+            $lockedSlot->update(['status' => 'blocked']);
+
+            return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
+        });
         return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
     }
 }
