@@ -49,13 +49,13 @@
 
         <div>
             <x-input-label for="university_id" :value="__('University ID')" />
-            <x-text-input id="university_id" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->university_id" disabled />
-            <p class="text-xs text-gray-500 mt-1">Cannot be changed. Contact Admin for corrections.</p>
+            <x-text-input id="university_id" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->university_id" disabled aria-readonly="true" aria-describedby="university_id_help" />
+            <p id="university_id_help" class="text-xs text-gray-500 mt-1">Cannot be changed. Contact Admin for corrections.</p>
         </div>
 
         <div>
             <x-input-label for="department" :value="__('Department')" />
-            <x-text-input id="department" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->department->name ?? 'None'" disabled />
+            <x-text-input id="department" type="text" class="mt-1 block w-full bg-gray-100 cursor-not-allowed" :value="$user->department->name ?? 'None'" disabled aria-readonly="true" />
         </div>
 
         <div class="flex items-center gap-4">
