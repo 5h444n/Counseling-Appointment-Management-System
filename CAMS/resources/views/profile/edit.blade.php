@@ -25,7 +25,7 @@
                 <div class="p-6 bg-slate-900 text-white rounded-xl shadow-lg">
                     <div class="flex items-center space-x-4">
                         <div class="h-16 w-16 rounded-full bg-orange-500 flex items-center justify-center text-2xl font-bold">
-                            {{ substr($user->name, 0, 1) }}
+                            {{ substr($user->name, 0, 1) ?: '?' }}
                         </div>
                         <div>
                             <h2 class="text-lg font-bold">{{ $user->name }}</h2>
