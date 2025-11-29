@@ -36,32 +36,35 @@
                                 <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                                 <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}"
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input type="date" name="date" id="date-input" required
-                                       class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
-                                <p class="text-xs text-gray-400 mt-1">Date selection based on your local time. All times are processed in {{ config('app.timezone') }}.</p>
+                                <input type="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
+                                       class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('date') border-red-500 @enderror">
+                                <x-input-error :messages="$errors->get('date')" class="mt-2" />
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label for="start_time" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                                    <input type="time" id="start_time" name="start_time" required
-                                           class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                                    <input type="time" name="start_time" required value="{{ old('start_time') }}"
+                                           class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('start_time') border-red-500 @enderror">
+                                    <x-input-error :messages="$errors->get('start_time')" class="mt-2" />
                                 </div>
                                 <div>
-                                    <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                                    <input type="time" id="end_time" name="end_time" required
-                                           class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                                    <input type="time" name="end_time" required value="{{ old('end_time') }}"
+                                           class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('end_time') border-red-500 @enderror">
+                                    <x-input-error :messages="$errors->get('end_time')" class="mt-2" />
                                 </div>
                             </div>
 
                             <div>
-                                <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Slot Duration</label>
-                                <select id="duration" name="duration" class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
-                                    <option value="20">20 Minutes</option>
-                                    <option value="30" selected>30 Minutes (Standard)</option>
-                                    <option value="45">45 Minutes</option>
-                                    <option value="60">1 Hour</option>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Slot Duration</label>
+                                <select name="duration" class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('duration') border-red-500 @enderror">
+                                    <option value="20" {{ old('duration') == '20' ? 'selected' : '' }}>20 Minutes</option>
+                                    <option value="30" {{ old('duration', '30') == '30' ? 'selected' : '' }}>30 Minutes (Standard)</option>
+                                    <option value="45" {{ old('duration') == '45' ? 'selected' : '' }}>45 Minutes</option>
+                                    <option value="60" {{ old('duration') == '60' ? 'selected' : '' }}>1 Hour</option>
                                 </select>
+                                <x-input-error :messages="$errors->get('duration')" class="mt-2" />
                             </div>
 
                             <button type="submit" class="w-full bg-slate-900 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg transition-colors shadow-lg shadow-orange-900/20">
