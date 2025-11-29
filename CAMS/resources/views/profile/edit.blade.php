@@ -34,7 +34,7 @@
                     </div>
                     <div class="mt-6 border-t border-gray-700 pt-4">
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-400">University ID</span>
+                            <span class="text-gray-300">University ID</span>
                             <span class="font-mono font-bold">{{ $user->university_id ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
