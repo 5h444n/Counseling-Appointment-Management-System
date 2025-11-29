@@ -40,7 +40,6 @@ class AdvisorSlotController extends Controller
         $advisorId = Auth::id();
         $date = $request->date;
 
-        // --- THE FIX IS HERE: Force (int) casting ---
         $duration = (int) $request->duration;
 
         // 2. Parse Times
