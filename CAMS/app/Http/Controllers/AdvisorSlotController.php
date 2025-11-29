@@ -34,7 +34,7 @@ class AdvisorSlotController extends Controller
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required',
             'end_time' => 'required|after:start_time',
-            'duration' => 'required|integer|in:15,20,30,45,60',
+            'duration' => 'required|integer|in:20,30,45,60',
         ]);
 
         $advisorId = Auth::id();
