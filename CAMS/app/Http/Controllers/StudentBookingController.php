@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AppointmentSlot;
 use App\Models\Appointment;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
@@ -67,11 +69,45 @@ class StudentBookingController extends Controller
             // 'file' => 'nullable|file|mimes:pdf,jpg,png|max:2048' // Task #8 preparation
         ]);
 
-        $slot = AppointmentSlot::findOrFail($request->slot_id);
+        $token = null;
 
-        // Security Check: Is slot still open?
-        if ($slot->status !== 'active') {
+        try {
+            DB::transaction(function () use ($request, &$token) {
+                // Use pessimistic locking to prevent race conditions
+                $slot = AppointmentSlot::where('id', $request->slot_id)
+                    ->where('status', 'active')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$slot) {
+                    throw new ModelNotFoundException('Slot not available');
+                }
+
+                // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
+                $deptCode = Auth::user()->department->code ?? 'GEN';
+                $token = strtoupper($deptCode . '-' . rand(1000, 9999) . '-' . Str::random(1));
+
+                // Create Appointment
+                Appointment::create([
+                    'student_id' => Auth::id(),
+                    'slot_id' => $slot->id,
+                    'purpose' => $request->purpose,
+                    'status' => 'pending', // Starts as Pending Approval
+                    'token' => $token,
+                ]);
+
+                // Lock the slot so no one else can book it
+                $slot->update(['status' => 'blocked']);
+            });
+        } catch (ModelNotFoundException $e) {
             return back()->with('error', 'Sorry, this slot was just taken.');
+        } catch (\Exception $e) {
+            Log::error('Appointment booking failed', [
+                'slot_id' => $request->slot_id,
+                'student_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'An error occurred while booking. Please try again.');
         }
 
         // Generate Token: DEPT-RANDOM-ID (e.g., CSE-5928-X)
@@ -110,5 +146,6 @@ class StudentBookingController extends Controller
 
             return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
         });
+        return redirect()->route('dashboard')->with('success', "Appointment Booked! Your Token: $token");
     }
 }

@@ -25,7 +25,10 @@
             @if($slots->count() > 0)
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     @foreach($slots as $slot)
-                        <div onclick="openBookingModal('{{ $slot->id }}', '{{ $slot->start_time->format('M d, Y') }}', '{{ $slot->start_time->format('h:i A') }}')"
+                        <div data-slot-id="{{ $slot->id }}" 
+                             data-slot-date="{{ $slot->start_time->format('M d, Y') }}" 
+                             data-slot-time="{{ $slot->start_time->format('h:i A') }}"
+                             onclick="openBookingModal(this)"
                              class="group cursor-pointer border border-green-200 bg-green-50 hover:bg-green-600 hover:border-green-700 hover:text-white rounded-lg p-4 transition-all duration-200 text-center relative overflow-hidden">
 
                             <p class="font-bold text-green-800 group-hover:text-white text-lg">
@@ -101,7 +104,11 @@
     </div>
 
     <script>
-        function openBookingModal(slotId, date, time) {
+        function openBookingModal(element) {
+            const slotId = element.dataset.slotId;
+            const date = element.dataset.slotDate;
+            const time = element.dataset.slotTime;
+            
             document.getElementById('modalSlotId').value = slotId;
             document.getElementById('modalDate').innerText = date;
             document.getElementById('modalTime').innerText = time;
