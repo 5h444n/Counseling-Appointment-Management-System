@@ -33,27 +33,27 @@
                             @csrf
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input type="date" name="date" required min="{{ date('Y-m-d') }}"
+                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                                    <input type="time" name="start_time" required
+                                    <label for="start_time" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                                    <input type="time" id="start_time" name="start_time" required
                                            class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                                    <input type="time" name="end_time" required
+                                    <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                                    <input type="time" id="end_time" name="end_time" required
                                            class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Slot Duration</label>
-                                <select name="duration" class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
+                                <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Slot Duration</label>
+                                <select id="duration" name="duration" class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                                     <option value="20">20 Minutes</option>
                                     <option value="30" selected>30 Minutes (Standard)</option>
                                     <option value="45">45 Minutes</option>
