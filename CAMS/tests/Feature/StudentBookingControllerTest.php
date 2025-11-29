@@ -19,10 +19,8 @@ class StudentBookingControllerTest extends TestCase
         parent::setUp();
         
         // Create departments for the tests
-        Department::insert([
-            ['name' => 'Computer Science', 'code' => 'CSE', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Electrical Engineering', 'code' => 'EEE', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Department::create(['name' => 'Computer Science', 'code' => 'CSE']);
+        Department::create(['name' => 'Electrical Engineering', 'code' => 'EEE']);
     }
 
     /**
