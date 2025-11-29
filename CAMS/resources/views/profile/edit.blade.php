@@ -29,7 +29,7 @@
                         </div>
                         <div>
                             <h2 class="text-lg font-bold">{{ $user->name }}</h2>
-                            <p class="text-orange-400 text-sm font-medium">{{ $user->department->name ?? 'General' }}</p>
+                            <p class="text-orange-300 text-sm font-medium">{{ $user->department->name ?? 'General' }}</p>
                         </div>
                     </div>
                     <div class="mt-6 border-t border-gray-700 pt-4">
