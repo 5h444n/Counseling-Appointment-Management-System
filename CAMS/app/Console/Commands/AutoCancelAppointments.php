@@ -31,7 +31,8 @@ class AutoCancelAppointments extends Command
         // TASK 1: Auto-Cancel Pending Requests older than 24 hours
         $expiredTime = Carbon::now()->subHours(24);
 
-        $staleAppointments = Appointment::where('status', 'pending')
+        $staleAppointments = Appointment::with('slot')
+            ->where('status', 'pending')
             ->where('created_at', '<', $expiredTime)
             ->get();
 
@@ -40,9 +41,10 @@ class AutoCancelAppointments extends Command
                 // Mark appointment as cancelled
                 $app->update(['status' => 'cancelled']);
 
-                // Free up the slot so others can book it (Optional logic, usually we free it)
-                // For this project, let's free it:
-                $app->slot->update(['status' => 'active']);
+                // Free up the slot so others can book it
+                if ($app->slot) {
+                    $app->slot->update(['status' => 'active']);
+                }
             });
 
             $this->info("Cancelled Stale Request: ID {$app->id}");
