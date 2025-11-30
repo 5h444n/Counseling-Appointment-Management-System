@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 // STUDENT BOOKING ROUTES (Authenticated users only)
 Route::middleware('auth')->group(function () {
     Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
     Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
 });
 /*

@@ -1,7 +1,3 @@
-@php
-    $departments = \App\Models\Department::all();
-@endphp
-
 <x-guest-layout>
     <form method="POST" action="{{ route('register') }}">
         @csrf
