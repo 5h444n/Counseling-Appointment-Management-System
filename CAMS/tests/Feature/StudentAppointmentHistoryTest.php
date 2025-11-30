@@ -256,7 +256,9 @@ class StudentAppointmentHistoryTest extends TestCase
     }
 
     /**
-     * Test advisors can also access the my-appointments page (route is auth protected, not student-only).
+     * Test advisors can also access the my-appointments page.
+     * Note: The '/student/my-appointments' route is under 'auth' middleware, not 'student' middleware,
+     * so any authenticated user can access it. This test documents the current behavior.
      */
     public function test_advisors_can_access_my_appointments_page(): void
     {

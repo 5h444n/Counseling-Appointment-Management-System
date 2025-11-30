@@ -287,6 +287,7 @@ class RegistrationValidationTest extends TestCase
 
     /**
      * Test registration enforces lowercase email.
+     * The 'lowercase' validation rule in RegisteredUserController rejects non-lowercase emails.
      */
     public function test_registration_enforces_lowercase_email(): void
     {
@@ -302,7 +303,7 @@ class RegistrationValidationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        // The email validation rule includes 'lowercase' which should reject uppercase
+        // The email validation rule includes 'lowercase' which rejects uppercase emails
         $response->assertSessionHasErrors('email');
     }
 

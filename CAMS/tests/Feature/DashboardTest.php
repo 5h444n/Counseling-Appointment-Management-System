@@ -250,8 +250,9 @@ class DashboardTest extends TestCase
     }
 
     /**
-     * Test unverified users can access dashboard (the verified middleware doesn't block access,
-     * it only shows a verification notice).
+     * Test unverified users can access dashboard.
+     * Note: The dashboard route uses 'verified' middleware but in the current configuration,
+     * the verified middleware allows access while showing a verification notice in the UI.
      */
     public function test_unverified_users_can_access_dashboard(): void
     {
@@ -261,7 +262,6 @@ class DashboardTest extends TestCase
             ->actingAs($user)
             ->get('/dashboard');
 
-        // The 'verified' middleware allows access but may show a notification
         // The route allows access to unverified users in the current configuration
         $response->assertOk();
     }
