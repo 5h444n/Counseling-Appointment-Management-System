@@ -25,7 +25,7 @@ class UserFactory extends Factory
             // Default to student, but we can override this
             'role' => 'student',
             'university_id' => fake()->unique()->numerify('011######'), // Generates like 011238491
-            'department_id' => Department::inRandomOrder()->first()->id ?? 1,
+            'department_id' => fn () => Department::inRandomOrder()->first()?->id,
         ];
     }
 

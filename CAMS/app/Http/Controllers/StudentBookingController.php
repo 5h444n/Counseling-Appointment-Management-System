@@ -19,12 +19,19 @@ class StudentBookingController extends Controller
      */
     public function index(Request $request)
     {
+        // Validate query parameters
+        $request->validate([
+            'search' => 'nullable|string|max:100',
+            'department_id' => 'nullable|integer|exists:departments,id',
+        ]);
+
         // Start query for Advisors only, eager load department for performance
         $query = User::where('role', 'advisor')->with('department');
 
-        // Handle Search (Name)
+        // Handle Search (Name) - escape LIKE wildcards for security
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
         // Handle Filter (Department)
@@ -45,7 +52,8 @@ class StudentBookingController extends Controller
      */
     public function show($advisorId)
     {
-        $advisor = User::with('department')->findOrFail($advisorId);
+        // Ensure we only show advisor profiles
+        $advisor = User::where('role', 'advisor')->with('department')->findOrFail($advisorId);
 
         // Fetch slots: Must be active, belongs to advisor, and in the future
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
