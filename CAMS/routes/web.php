@@ -18,7 +18,14 @@ Route::get('/', function () {
 
 // 2. Dashboard: Accessible by any logged-in user (Student or Advisor)
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $nextAppointment = null;
+    if (Auth::check()) {
+        $nextAppointment = \App\Models\Appointment::where('student_id', Auth::id())
+            ->where('status', 'approved')
+            ->latest()
+            ->first();
+    }
+    return view('dashboard', compact('nextAppointment'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // 3. Profile Routes: Standard Laravel profile management

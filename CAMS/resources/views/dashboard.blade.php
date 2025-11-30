@@ -43,11 +43,13 @@
             <div class="flex justify-between items-start">
                 <div>
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Next Appointment</p>
-                    <p class="text-xl font-bold text-gray-800 mt-1">No Upcoming</p>
-                    <p class="text-sm text-gray-500 mt-1">Check back later</p>
-                </div>
-                <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    @if(isset($nextAppointment) && $nextAppointment)
+                        <p class="text-xl font-bold text-gray-800 mt-1">{{ $nextAppointment->slot->start_time->format('M d, h:i A') }}</p>
+                        <p class="text-sm font-mono text-orange-600 mt-1">Token: {{ $nextAppointment->token }}</p>
+                    @else
+                        <p class="text-xl font-bold text-gray-800 mt-1">No Upcoming</p>
+                        <p class="text-sm text-gray-500 mt-1">Check back later</p>
+                    @endif
                 </div>
             </div>
         </div>
