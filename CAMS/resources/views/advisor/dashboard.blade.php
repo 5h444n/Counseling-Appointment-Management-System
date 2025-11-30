@@ -68,7 +68,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="approved">
-                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md text-xs transition-colors shadow-sm">
+                                        <button type="submit" aria-label="Accept appointment from {{ $app->student->name }}" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md text-xs transition-colors shadow-sm">
                                             Accept
                                         </button>
                                     </form>
