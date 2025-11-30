@@ -65,8 +65,14 @@ class AutoCancelAppointments extends Command
             ->get();
 
         foreach ($noShowAppointments as $app) {
-            $app->update(['status' => 'no_show']);
+            DB::transaction(function () use ($app) {
+                $app->update(['status' => 'no_show']);
 
+                // Free up the slot so others can book it, similar to cancellation
+                if ($app->slot) {
+                    $app->slot->update(['status' => 'active']);
+                }
+            });
             $this->info("Marked No-Show: ID {$app->id}");
             Log::info("Marked Appointment #{$app->id} as No-Show.");
         }
