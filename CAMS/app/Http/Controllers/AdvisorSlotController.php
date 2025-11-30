@@ -34,8 +34,12 @@ class AdvisorSlotController extends Controller
         // Note: 'after_or_equal:today' uses the server's configured timezone (UTC by default)
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required',
-            'end_time' => 'required|after:start_time',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => ['required', 'date_format:H:i', function ($attribute, $value, $fail) use ($request) {
+                if ($request->start_time && $value <= $request->start_time) {
+                    $fail('The end time must be after the start time.');
+                }
+            }],
             'duration' => 'required|integer|in:20,30,45,60',
         ]);
 
@@ -45,8 +49,12 @@ class AdvisorSlotController extends Controller
         $duration = (int) $request->duration;
 
         // 2. Parse Times
-        $start = Carbon::parse("$date {$request->start_time}");
-        $end = Carbon::parse("$date {$request->end_time}");
+        try {
+            $start = Carbon::parse("$date {$request->start_time}");
+            $end = Carbon::parse("$date {$request->end_time}");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Invalid date or time format provided.');
+        }
 
         $count = 0;
 

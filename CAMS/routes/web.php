@@ -28,10 +28,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// STUDENT BOOKING ROUTES
-Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
-Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+// STUDENT BOOKING ROUTES (Authenticated users only)
+Route::middleware('auth')->group(function () {
+    Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
+    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+});
 /*
 |--------------------------------------------------------------------------
 | ROLE-BASED ROUTES (Week 1 & 2 Work)

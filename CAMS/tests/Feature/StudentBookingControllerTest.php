@@ -265,7 +265,7 @@ class StudentBookingControllerTest extends TestCase
             ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'Sorry, this slot was just taken.');
+        $response->assertSessionHas('error', 'Sorry, this slot was just taken by someone else.');
 
         // Verify no appointment was created
         $this->assertDatabaseMissing('appointments', [
@@ -356,7 +356,7 @@ class StudentBookingControllerTest extends TestCase
             ->from("/student/advisors/{$advisor->id}")
             ->post('/student/book', [
                 'slot_id' => $slot->id,
-                'purpose' => str_repeat('a', 256), // Exceeds 255 char limit
+                'purpose' => str_repeat('a', 501), // Exceeds 500 char limit
             ]);
 
         $response->assertSessionHasErrors('purpose');

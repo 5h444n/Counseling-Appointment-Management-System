@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('waitlists', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('slot_id')->constrained('appointment_slots')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->boolean('is_notified')->default(false);
             $table->timestamps();
+            
+            // Prevent duplicate waitlist entries
+            $table->unique(['slot_id', 'student_id']);
         });
     }
 
