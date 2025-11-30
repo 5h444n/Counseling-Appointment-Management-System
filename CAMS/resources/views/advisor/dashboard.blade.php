@@ -6,6 +6,18 @@
             <p class="text-gray-500 text-sm">Manage incoming counseling requests from students.</p>
         </div>
 
+        @if(session('success'))
+            <div class="bg-green-50 text-green-700 p-3 rounded-lg mb-4 text-sm border-l-4 border-green-500">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm border-l-4 border-red-500">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-slate-900 text-white flex justify-between items-center">
                 <h2 class="font-semibold">Pending Approvals</h2>
