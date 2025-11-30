@@ -44,6 +44,8 @@ class AutoCancelAppointments extends Command
                 // Free up the slot so others can book it
                 if ($app->slot) {
                     $app->slot->update(['status' => 'active']);
+                } else {
+                    Log::warning("Appointment #{$app->id} has no associated slot.");
                 }
             });
 
