@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
     Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
     Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 });
 /*
 |--------------------------------------------------------------------------

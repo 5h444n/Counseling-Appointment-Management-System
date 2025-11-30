@@ -124,4 +124,17 @@ class StudentBookingController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+    /**
+     * 4. List Student's Appointment History
+     */
+    public function myAppointments()
+    {
+        $appointments = Appointment::with(['slot.advisor', 'documents'])
+            ->where('student_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('student.appointments.index', compact('appointments'));
+    }
 }
