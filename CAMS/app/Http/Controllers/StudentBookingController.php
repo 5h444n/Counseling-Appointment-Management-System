@@ -91,8 +91,17 @@ class StudentBookingController extends Controller
                 }
 
                 // Generate a Unique Token (e.g., CSE-8492-X)
+                // 1. Get Department Code (e.g., CSE)
                 $deptCode = Auth::user()->department->code ?? 'GEN';
-                $token = strtoupper($deptCode . '-' . rand(1000, 9999) . '-' . Str::random(1));
+
+// 2. Get User ID (e.g., 123)
+                $userId = Auth::id();
+
+// 3. Generate a Serial (Random letter A-Z)
+                $serial = chr(rand(65, 90));
+
+// Final Format: CSE-123-A
+                $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
 
                 // Create the Appointment
                 Appointment::create([
