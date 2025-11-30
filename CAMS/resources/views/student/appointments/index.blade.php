@@ -26,6 +26,8 @@
                                     <span class="font-mono font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200">
                                         #{{ $app->token }}
                                     </span>
+                                @elseif($app->status === 'declined')
+                                    <span class="text-gray-400 line-through text-xs">Declined</span>
                                 @else
                                     <span class="text-gray-400 line-through text-xs">Cancelled</span>
                                 @endif
