@@ -34,9 +34,7 @@
 
                             <div>
                                 <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}"
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input type="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
+                                <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('date') border-red-500 @enderror">
                                 <x-input-error :messages="$errors->get('date')" class="mt-2" />
                             </div>
