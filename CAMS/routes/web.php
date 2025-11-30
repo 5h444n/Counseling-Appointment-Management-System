@@ -1,66 +1,92 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdvisorSlotController; // <--- Imported the new Controller
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdvisorSlotController;
 use App\Http\Controllers\StudentBookingController;
+use App\Http\Controllers\AdvisorAppointmentController; // <--- Added for Task #9
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group.
+|
 */
 
-// 1. Root Route: Redirect straight to Login (More professional)
+// =========================================================================
+// 1. PUBLIC & GLOBAL ROUTES
+// =========================================================================
+
+// Root Route: Redirects guests to Login immediately for a private portal feel
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// 2. Dashboard: Accessible by any logged-in user (Student or Advisor)
+// Main Dashboard: The landing page after login (Accessible by all roles)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// 3. Profile Routes: Standard Laravel profile management
+// User Profile: Settings for Password/Name updates
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// STUDENT BOOKING ROUTES
-Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
-Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+
 /*
 |--------------------------------------------------------------------------
-| ROLE-BASED ROUTES (Week 1 & 2 Work)
+| ROLE-BASED ROUTES (PROTECTED)
 |--------------------------------------------------------------------------
 */
 
-// === ADVISOR AREA ===
-// Only users with 'role: advisor' can access these.
+// =========================================================================
+// 2. STUDENT AREA
+// Protected by 'auth' and 'student' middleware
+// =========================================================================
+Route::middleware(['auth', 'student'])->group(function () {
+
+    // Booking Interface: Search Advisors & View Slots
+    Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
+
+    // Appointment Submission: Process the booking request
+    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+
+});
+
+
+// =========================================================================
+// 3. ADVISOR AREA
+// Protected by 'auth' and 'advisor' middleware
+// =========================================================================
 Route::middleware(['auth', 'advisor'])->group(function () {
 
-    // Manage Availability (The Phase 3 Work)
+    // --- Task #6: Availability Management ---
+    // Manage Slots (Create/Delete)
     Route::get('/advisor/slots', [AdvisorSlotController::class, 'index'])->name('advisor.slots');
     Route::post('/advisor/slots', [AdvisorSlotController::class, 'store'])->name('advisor.slots.store');
     Route::delete('/advisor/slots/{slot}', [AdvisorSlotController::class, 'destroy'])->name('advisor.slots.destroy');
 
-});
+    // --- Task #9: Request Handling (NEW) ---
+    // Advisor Dashboard (View Pending Requests)
+    Route::get('/advisor/dashboard', [AdvisorAppointmentController::class, 'index'])->name('advisor.dashboard');
 
-// === STUDENT AREA (Future Placeholders) ===
-// Only users with 'role: student' can access these.
-Route::middleware(['auth', 'student'])->group(function () {
-
-    Route::get('/student/book', function () {
-        return "Student Booking Page (Coming Soon)";
-    })->name('student.book');
+    // Action Buttons (Approve/Decline Requests)
+    Route::patch('/advisor/appointments/{id}', [AdvisorAppointmentController::class, 'updateStatus'])->name('advisor.appointments.update');
 
 });
 
-// === ADMIN AREA ===
-// Only users with 'role: admin' can access these.
+
+// =========================================================================
+// 4. ADMIN AREA
+// Protected by 'auth' and 'admin' middleware
+// =========================================================================
 Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
