@@ -42,7 +42,9 @@ class AutoCancelAppointments extends Command
 
                 // Free up the slot so others can book it (Optional logic, usually we free it)
                 // For this project, let's free it:
-                $app->slot->update(['status' => 'active']);
+                if ($app->slot && $app->slot->status === 'blocked') {
+                    $app->slot->update(['status' => 'active']);
+                }
             });
 
             $this->info("Cancelled Stale Request: ID {$app->id}");
