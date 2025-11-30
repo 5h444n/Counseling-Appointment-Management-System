@@ -28,7 +28,14 @@ Route::get('/', function () {
 
 // Main Dashboard: The landing page after login (Accessible by all roles)
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $nextAppointment = null;
+    if (Auth::check()) {
+        $nextAppointment = \App\Models\Appointment::where('student_id', Auth::id())
+            ->where('status', 'approved')
+            ->latest()
+            ->first();
+    }
+    return view('dashboard', compact('nextAppointment'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // User Profile: Settings for Password/Name updates
@@ -38,7 +45,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+// STUDENT BOOKING ROUTES (Authenticated users only)
+Route::middleware('auth')->group(function () {
+    Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
+    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
+});
 /*
 |--------------------------------------------------------------------------
 | ROLE-BASED ROUTES (PROTECTED)

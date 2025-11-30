@@ -91,9 +91,17 @@ class StudentBookingController extends Controller
                 }
 
                 // Generate a Unique Token (e.g., CSE-8492-X)
+                // 1. Get Department Code (e.g., CSE)
                 $deptCode = Auth::user()->department->code ?? 'GEN';
-                $token = strtoupper($deptCode . '-' . rand(1000, 9999) . '-' . Str::random(1));
 
+                // 2. Get User ID (e.g., 123)
+                $userId = Auth::id();
+
+                // 3. Generate a Serial (Random letter A-Z) and ensure uniqueness
+                do {
+                    $serial = chr(rand(65, 90));
+                    $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
+                } while (Appointment::where('token', $token)->exists());
                 // Create the Appointment
                 Appointment::create([
                     'student_id' => Auth::id(),
@@ -114,5 +122,18 @@ class StudentBookingController extends Controller
             // 4. Error Redirect
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * 4. List Student's Appointment History
+     */
+    public function myAppointments()
+    {
+        $appointments = Appointment::with(['slot.advisor', 'documents'])
+            ->where('student_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('student.appointments.index', compact('appointments'));
     }
 }
