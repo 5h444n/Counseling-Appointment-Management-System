@@ -56,6 +56,17 @@ class AdvisorSlotController extends Controller
             return redirect()->back()->with('error', 'Invalid date or time format provided.');
         }
 
+        // Validate that the start time is in the future
+        if ($start->isPast()) {
+            return redirect()->back()->with('error', 'Cannot create slots in the past.');
+        }
+
+        // Validate that the time range is sufficient for at least one slot
+        $totalMinutes = $start->diffInMinutes($end);
+        if ($totalMinutes < $duration) {
+            return redirect()->back()->with('error', "The time range must be at least {$duration} minutes for the selected duration.");
+        }
+
         $count = 0;
 
         // 3. Fetch all existing overlapping slots once before the loop
@@ -91,10 +102,10 @@ class AdvisorSlotController extends Controller
         }
 
         if ($count === 0) {
-            return redirect()->back()->with('error', "No slots could be generated. The time range may be too short for the selected duration, or all slots overlap with existing availability.");
+            return redirect()->back()->with('error', "No slots could be generated. All slots in this time range already exist.");
         }
 
-        return redirect()->back()->with('success', "Successfully generated {$count} slots for {$date}.");
+        return redirect()->back()->with('success', "Successfully generated {$count} slot(s) for {$date}.");
     }
 
     /**
@@ -104,9 +115,14 @@ class AdvisorSlotController extends Controller
     {
         $slot = AppointmentSlot::where('advisor_id', Auth::id())->findOrFail($id);
 
-        // Only allow deleting if not booked (optional safety check)
+        // Only allow deleting if not booked
         if ($slot->status !== 'active') {
-            return redirect()->back()->with('error', 'Cannot delete a booked slot.');
+            return redirect()->back()->with('error', 'Cannot delete a booked slot. Please decline the appointment first.');
+        }
+
+        // Additional check: ensure no appointments are linked to this slot
+        if ($slot->appointment()->exists()) {
+            return redirect()->back()->with('error', 'Cannot delete a slot with an existing appointment.');
         }
 
         $slot->delete();

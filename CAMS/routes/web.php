@@ -45,13 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// STUDENT BOOKING ROUTES (Authenticated users only)
-Route::middleware('auth')->group(function () {
-    Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
-    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
-    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
-});
 /*
 |--------------------------------------------------------------------------
 | ROLE-BASED ROUTES (PROTECTED)
@@ -66,10 +59,13 @@ Route::middleware(['auth', 'student'])->group(function () {
 
     // Booking Interface: Search Advisors & View Slots
     Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
 
     // Appointment Submission: Process the booking request
     Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+    
+    // Appointment History
+    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
 });
 

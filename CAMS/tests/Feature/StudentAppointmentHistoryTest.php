@@ -256,9 +256,9 @@ class StudentAppointmentHistoryTest extends TestCase
     }
 
     /**
-     * Test advisors can also access the my-appointments page.
-     * Note: The '/student/my-appointments' route is under 'auth' middleware, not 'student' middleware,
-     * so any authenticated user can access it. This test documents the current behavior.
+     * Test that advisors cannot access student appointments page.
+     * Note: The '/student/my-appointments' route is protected by 'student' middleware,
+     * so only students can access it.
      */
     public function test_advisors_can_access_my_appointments_page(): void
     {
@@ -268,7 +268,7 @@ class StudentAppointmentHistoryTest extends TestCase
             ->actingAs($advisor)
             ->get('/student/my-appointments');
 
-        // The route is under 'auth' middleware, not 'student' middleware
-        $response->assertOk();
+        // The route is under 'student' middleware, so advisors get 403
+        $response->assertStatus(403);
     }
 }

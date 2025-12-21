@@ -43,11 +43,17 @@ class AdvisorAppointmentController extends Controller
             return back()->with('error', 'Unauthorized action.');
         }
 
+        // Prevent status changes on already processed appointments
+        if ($appointment->status !== 'pending') {
+            return back()->with('error', 'This appointment has already been processed.');
+        }
+
         $appointment->update(['status' => $request->status]);
 
-        // If declined, we might want to free up the slot (Optional logic)
-        // For MVP, we keep the slot blocked or manage it manually.
-        // If Approved, the status simply changes to 'approved' (Booked).
+        // If declined, free up the slot for other students
+        if ($request->status === 'declined') {
+            $appointment->slot->update(['status' => 'active']);
+        }
 
         $message = $request->status === 'approved' ? 'Appointment Confirmed!' : 'Request Declined.';
 
