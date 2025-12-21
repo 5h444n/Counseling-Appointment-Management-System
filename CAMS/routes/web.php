@@ -45,13 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// STUDENT BOOKING ROUTES (Authenticated users only)
-Route::middleware('auth')->group(function () {
-    Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
-    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
-    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
-});
 /*
 |--------------------------------------------------------------------------
 | ROLE-BASED ROUTES (PROTECTED)
@@ -62,14 +55,17 @@ Route::middleware('auth')->group(function () {
 // 2. STUDENT AREA
 // Protected by 'auth' and 'student' middleware
 // =========================================================================
-Route::middleware(['auth', 'student'])->group(function () {
+Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
 
     // Booking Interface: Search Advisors & View Slots
     Route::get('/student/advisors', [StudentBookingController::class, 'index'])->name('student.advisors.index');
-    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->name('student.advisors.show');
+    Route::get('/student/advisors/{id}', [StudentBookingController::class, 'show'])->whereNumber('id')->name('student.advisors.show');
 
-    // Appointment Submission: Process the booking request
-    Route::post('/student/book', [StudentBookingController::class, 'store'])->name('student.book.store');
+    // Appointment Submission: Process the booking request (stricter rate limit)
+    Route::post('/student/book', [StudentBookingController::class, 'store'])->middleware('throttle:10,1')->name('student.book.store');
+    
+    // Appointment History
+    Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
 });
 
@@ -78,12 +74,12 @@ Route::middleware(['auth', 'student'])->group(function () {
 // 3. ADVISOR AREA
 // Protected by 'auth' and 'advisor' middleware
 // =========================================================================
-Route::middleware(['auth', 'advisor'])->group(function () {
+Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 
     // --- Task #6: Availability Management ---
     // Manage Slots (Create/Delete)
     Route::get('/advisor/slots', [AdvisorSlotController::class, 'index'])->name('advisor.slots');
-    Route::post('/advisor/slots', [AdvisorSlotController::class, 'store'])->name('advisor.slots.store');
+    Route::post('/advisor/slots', [AdvisorSlotController::class, 'store'])->middleware('throttle:20,1')->name('advisor.slots.store');
     Route::delete('/advisor/slots/{slot}', [AdvisorSlotController::class, 'destroy'])->name('advisor.slots.destroy');
 
     // --- Task #9: Request Handling (NEW) ---

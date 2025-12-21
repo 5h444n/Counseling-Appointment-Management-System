@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdvisorAppointmentController extends Controller
 {
@@ -43,11 +44,26 @@ class AdvisorAppointmentController extends Controller
             return back()->with('error', 'Unauthorized action.');
         }
 
+        // Prevent status changes on already processed appointments
+        if ($appointment->status !== 'pending') {
+            return back()->with('error', 'This appointment has already been processed.');
+        }
+
         $appointment->update(['status' => $request->status]);
 
-        // If declined, we might want to free up the slot (Optional logic)
-        // For MVP, we keep the slot blocked or manage it manually.
-        // If Approved, the status simply changes to 'approved' (Booked).
+        // If declined, free up the slot for other students
+        if ($request->status === 'declined') {
+            $appointment->slot->update(['status' => 'active']);
+        }
+
+        // Log the appointment status change
+        Log::info('Appointment status updated', [
+            'advisor_id' => Auth::id(),
+            'appointment_id' => $appointment->id,
+            'old_status' => 'pending',
+            'new_status' => $request->status,
+            'student_id' => $appointment->student_id,
+        ]);
 
         $message = $request->status === 'approved' ? 'Appointment Confirmed!' : 'Request Declined.';
 

@@ -10,6 +10,7 @@ use App\Models\Appointment;
 use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
@@ -73,7 +74,7 @@ class StudentBookingController extends Controller
         // 1. Validate Form Input
         $request->validate([
             'slot_id' => 'required|exists:appointment_slots,id',
-            'purpose' => 'required|string|max:500',
+            'purpose' => 'required|string|min:10|max:500',
         ]);
 
         try {
@@ -90,6 +91,20 @@ class StudentBookingController extends Controller
                     throw new \Exception('Sorry, this slot was just taken by someone else.');
                 }
 
+                // Ensure the slot is in the future
+                if ($slot->start_time <= now()) {
+                    throw new \Exception('Cannot book a slot that has already started or passed.');
+                }
+
+                // Prevent duplicate bookings by same student for same slot
+                $existingAppointment = Appointment::where('student_id', Auth::id())
+                    ->where('slot_id', $slot->id)
+                    ->exists();
+
+                if ($existingAppointment) {
+                    throw new \Exception('You have already booked this slot.');
+                }
+
                 // Generate a Unique Token (e.g., CSE-8492-X)
                 // 1. Get Department Code (e.g., CSE)
                 $deptCode = Auth::user()->department->code ?? 'GEN';
@@ -98,12 +113,20 @@ class StudentBookingController extends Controller
                 $userId = Auth::id();
 
                 // 3. Generate a Serial (Random letter A-Z) and ensure uniqueness
+                $maxAttempts = 26; // Maximum 26 letters
+                $attempts = 0;
                 do {
                     $serial = chr(rand(65, 90));
                     $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
+                    $attempts++;
+                    
+                    if ($attempts >= $maxAttempts) {
+                        throw new \Exception('Unable to generate a unique token. Please try again.');
+                    }
                 } while (Appointment::where('token', $token)->exists());
+                
                 // Create the Appointment
-                Appointment::create([
+                $appointment = Appointment::create([
                     'student_id' => Auth::id(),
                     'slot_id'    => $slot->id,
                     'purpose'    => $request->purpose,
@@ -113,6 +136,14 @@ class StudentBookingController extends Controller
 
                 // Mark slot as blocked
                 $slot->update(['status' => 'blocked']);
+
+                // Log successful booking
+                Log::info('Appointment booked successfully', [
+                    'student_id' => Auth::id(),
+                    'appointment_id' => $appointment->id,
+                    'token' => $token,
+                    'slot_id' => $slot->id,
+                ]);
             });
 
             // 3. Success Redirect
@@ -120,6 +151,11 @@ class StudentBookingController extends Controller
 
         } catch (\Exception $e) {
             // 4. Error Redirect
+            Log::warning('Appointment booking failed', [
+                'student_id' => Auth::id(),
+                'slot_id' => $request->slot_id,
+                'error' => $e->getMessage(),
+            ]);
             return back()->with('error', $e->getMessage());
         }
     }
