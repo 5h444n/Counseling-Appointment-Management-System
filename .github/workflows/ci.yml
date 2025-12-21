@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   laravel-tests:
@@ -21,86 +21,86 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
 
-    - name: Copy .env file
-      run: |
-        cd CAMS
-        cp .env.example .env
+      - name: Copy .env file
+        run: |
+          cd CAMS
+          cp .env.example .env
 
-    - name: Install Composer Dependencies
-      run: |
-        cd CAMS
-        composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Install Composer Dependencies
+        run: |
+          cd CAMS
+          composer install --no-interaction --prefer-dist --optimize-autoloader
 
-    - name: Generate application key
-      run: |
-        cd CAMS
-        php artisan key:generate
+      - name: Generate application key
+        run: |
+          cd CAMS
+          php artisan key:generate
 
-    - name: Set directory permissions
-      run: |
-        cd CAMS
-        chmod -R 777 storage bootstrap/cache
+      - name: Set directory permissions
+        run: |
+          cd CAMS
+          chmod -R 777 storage bootstrap/cache
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: CAMS/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: CAMS/package-lock.json
 
-    - name: Install NPM Dependencies
-      run: |
-        cd CAMS
-        npm ci
+      - name: Install NPM Dependencies
+        run: |
+          cd CAMS
+          npm ci
 
-    - name: Build assets
-      run: |
-        cd CAMS
-        npm run build
+      - name: Build assets
+        run: |
+          cd CAMS
+          npm run build
 
-    - name: Run Laravel Pint (Code Style)
-      run: |
-        cd CAMS
-        ./vendor/bin/pint --test
+      - name: Run Laravel Pint (Code Style)
+        run: |
+          cd CAMS
+          ./vendor/bin/pint --test
 
-    - name: Run tests
-      run: |
-        cd CAMS
-        php artisan test
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: ':memory:'
+      - name: Run tests
+        run: |
+          cd CAMS
+          php artisan test
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
 
   code-quality:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
 
-    - name: Install Composer Dependencies
-      run: |
-        cd CAMS
-        composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Install Composer Dependencies
+        run: |
+          cd CAMS
+          composer install --no-interaction --prefer-dist --optimize-autoloader
 
-    - name: Check code style with Pint
-      run: |
-        cd CAMS
-        ./vendor/bin/pint --test
+      - name: Check code style with Pint
+        run: |
+          cd CAMS
+          ./vendor/bin/pint --test
