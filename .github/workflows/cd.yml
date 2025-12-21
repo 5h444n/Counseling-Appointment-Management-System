@@ -1,0 +1,78 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
+        coverage: none
+
+    - name: Install Composer Dependencies
+      run: |
+        cd CAMS
+        composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: CAMS/package-lock.json
+
+    - name: Install NPM Dependencies
+      run: |
+        cd CAMS
+        npm ci
+
+    - name: Build production assets
+      run: |
+        cd CAMS
+        npm run build
+
+    # Deployment steps would go here
+    # Example deployment methods (uncomment and configure as needed):
+    
+    # - name: Deploy to Server via SSH
+    #   uses: appleboy/ssh-action@master
+    #   with:
+    #     host: ${{ secrets.DEPLOY_HOST }}
+    #     username: ${{ secrets.DEPLOY_USER }}
+    #     key: ${{ secrets.DEPLOY_KEY }}
+    #     script: |
+    #       cd /var/www/html
+    #       git pull origin main
+    #       cd CAMS
+    #       composer install --no-dev --optimize-autoloader
+    #       npm ci
+    #       npm run build
+    #       php artisan migrate --force
+    #       php artisan config:cache
+    #       php artisan route:cache
+    #       php artisan view:cache
+
+    # - name: Deploy to Laravel Forge
+    #   run: |
+    #     curl -X POST ${{ secrets.FORGE_DEPLOY_WEBHOOK }}
+
+    # - name: Deploy to AWS/DigitalOcean/etc
+    #   run: |
+    #     # Add your deployment commands here
+
+    - name: Deployment placeholder
+      run: |
+        echo "Deployment steps should be configured based on your hosting environment"
+        echo "Please uncomment and configure the appropriate deployment method above"
