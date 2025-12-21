@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdvisorSlotController extends Controller
 {
@@ -105,6 +106,14 @@ class AdvisorSlotController extends Controller
             return redirect()->back()->with('error', "No slots could be generated. All slots in this time range already exist.");
         }
 
+        // Log successful slot creation
+        Log::info('Appointment slots created', [
+            'advisor_id' => $advisorId,
+            'date' => $date,
+            'count' => $count,
+            'duration' => $duration,
+        ]);
+
         return redirect()->back()->with('success', "Successfully generated {$count} slot(s) for {$date}.");
     }
 
@@ -126,6 +135,13 @@ class AdvisorSlotController extends Controller
         }
 
         $slot->delete();
+
+        // Log slot deletion
+        Log::info('Appointment slot deleted', [
+            'advisor_id' => Auth::id(),
+            'slot_id' => $id,
+            'start_time' => $slot->start_time,
+        ]);
 
         return redirect()->back()->with('success', 'Slot removed successfully.');
     }

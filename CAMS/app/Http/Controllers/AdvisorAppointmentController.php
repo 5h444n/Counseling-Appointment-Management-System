@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdvisorAppointmentController extends Controller
 {
@@ -54,6 +55,15 @@ class AdvisorAppointmentController extends Controller
         if ($request->status === 'declined') {
             $appointment->slot->update(['status' => 'active']);
         }
+
+        // Log the appointment status change
+        Log::info('Appointment status updated', [
+            'advisor_id' => Auth::id(),
+            'appointment_id' => $appointment->id,
+            'old_status' => 'pending',
+            'new_status' => $request->status,
+            'student_id' => $appointment->student_id,
+        ]);
 
         $message = $request->status === 'approved' ? 'Appointment Confirmed!' : 'Request Declined.';
 

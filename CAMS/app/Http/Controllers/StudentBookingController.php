@@ -10,6 +10,7 @@ use App\Models\Appointment;
 use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
@@ -125,7 +126,7 @@ class StudentBookingController extends Controller
                 } while (Appointment::where('token', $token)->exists());
                 
                 // Create the Appointment
-                Appointment::create([
+                $appointment = Appointment::create([
                     'student_id' => Auth::id(),
                     'slot_id'    => $slot->id,
                     'purpose'    => $request->purpose,
@@ -135,6 +136,14 @@ class StudentBookingController extends Controller
 
                 // Mark slot as blocked
                 $slot->update(['status' => 'blocked']);
+
+                // Log successful booking
+                Log::info('Appointment booked successfully', [
+                    'student_id' => Auth::id(),
+                    'appointment_id' => $appointment->id,
+                    'token' => $token,
+                    'slot_id' => $slot->id,
+                ]);
             });
 
             // 3. Success Redirect
@@ -142,6 +151,11 @@ class StudentBookingController extends Controller
 
         } catch (\Exception $e) {
             // 4. Error Redirect
+            Log::warning('Appointment booking failed', [
+                'student_id' => Auth::id(),
+                'slot_id' => $request->slot_id,
+                'error' => $e->getMessage(),
+            ]);
             return back()->with('error', $e->getMessage());
         }
     }
