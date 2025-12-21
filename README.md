@@ -5,6 +5,9 @@
   <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white" alt="Alpine.js">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
+  <br>
+  <img src="https://github.com/5h444n/Counseling-Appointment-Management-System/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+  <img src="https://github.com/5h444n/Counseling-Appointment-Management-System/actions/workflows/cd.yml/badge.svg" alt="CD Status">
 </p>
 
 # 🎓 Counseling Appointment Management System (CAMS)
