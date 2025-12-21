@@ -72,7 +72,13 @@ jobs:
       #   run: |
       #     # Add your deployment commands here
 
-      - name: Deployment placeholder
+      - name: Deployment status
         run: |
-          echo "Deployment steps should be configured based on your hosting environment"
-          echo "Please uncomment and configure the appropriate deployment method above"
+          echo "⚠️  WARNING: Deployment is not configured!"
+          echo "This is a placeholder workflow. To enable actual deployment:"
+          echo "1. Uncomment the appropriate deployment method above"
+          echo "2. Configure the required secrets in GitHub repository settings"
+          echo "3. Remove this placeholder step"
+          echo ""
+          echo "Without configuration, this workflow only builds assets but does not deploy."
+          exit 1

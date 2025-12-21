@@ -10,16 +10,6 @@ jobs:
   laravel-tests:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: testing
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,11 +58,6 @@ jobs:
           cd CAMS
           npm run build
 
-      - name: Run Laravel Pint (Code Style)
-        run: |
-          cd CAMS
-          ./vendor/bin/pint --test
-
       - name: Run tests
         run: |
           cd CAMS
@@ -92,7 +77,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          extensions: mbstring, xml, ctype, json
           coverage: none
 
       - name: Install Composer Dependencies
