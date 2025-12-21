@@ -13,11 +13,9 @@ The CI workflow runs automatically on:
 **Jobs:**
 
 #### laravel-tests
-- Sets up MySQL 8.0 service for database testing
-- Installs PHP 8.2 with required extensions
+- Sets up PHP 8.2 with required extensions
 - Installs Composer dependencies
 - Installs NPM dependencies and builds assets
-- Runs Laravel Pint for code style validation
 - Executes PHPUnit tests using SQLite in-memory database
 
 #### code-quality
@@ -116,7 +114,25 @@ The CI workflow does not currently save artifacts. To enable:
 
 ## Environment Variables
 
-The CI workflow uses SQLite in-memory database for testing. To use MySQL instead, update the test job environment:
+The CI workflow uses SQLite in-memory database for testing, which is fast and doesn't require additional services.
+
+If you need to use MySQL for testing to match your production environment:
+
+1. Add the MySQL service to the `laravel-tests` job:
+
+```yaml
+services:
+  mysql:
+    image: mysql:8.0
+    env:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: testing
+    ports:
+      - 3306:3306
+    options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+```
+
+2. Update the test environment variables:
 
 ```yaml
 env:

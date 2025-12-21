@@ -39,7 +39,7 @@ jobs:
       - name: Set directory permissions
         run: |
           cd CAMS
-          chmod -R 777 storage bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

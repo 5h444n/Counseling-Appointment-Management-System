@@ -47,7 +47,7 @@ jobs:
       # Example deployment methods (uncomment and configure as needed):
 
       # - name: Deploy to Server via SSH
-      #   uses: appleboy/ssh-action@master
+      #   uses: appleboy/ssh-action@v1.0.3
       #   with:
       #     host: ${{ secrets.DEPLOY_HOST }}
       #     username: ${{ secrets.DEPLOY_USER }}
