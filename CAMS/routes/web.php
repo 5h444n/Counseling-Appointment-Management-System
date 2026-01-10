@@ -90,6 +90,7 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 
     // Action Buttons (Approve/Decline Requests)
     Route::patch('/advisor/appointments/{id}', [AdvisorAppointmentController::class, 'updateStatus'])->name('advisor.appointments.update');
+    Route::get('/advisor/schedule', [AdvisorScheduleController::class, 'index'])->name('advisor.schedule');
 
 });
 
