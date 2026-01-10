@@ -31,9 +31,10 @@
                                         <span class="font-semibold">Purpose:</span> {{ Str::limit($appt->purpose, 50) }}
                                     </div>
 
-                                    <button class="w-full bg-orange-600 text-white text-sm font-bold py-2 rounded hover:bg-orange-700 transition">
-                                        Start Session
-                                    </button>
+                                    <a href="{{ route('advisor.minutes.create', $appt->id) }}"
+   class="block w-full text-center bg-orange-600 text-white text-sm font-bold py-2 rounded hover:bg-orange-700 transition">
+    Start Session
+</a>
                                 </div>
                             @endforeach
                         </div>
