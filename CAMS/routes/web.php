@@ -3,8 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdvisorSlotController;
 use App\Http\Controllers\StudentBookingController;
-use App\Http\Controllers\AdvisorAppointmentController; // <--- Added for Task #9
+use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdvisorScheduleController;
 
 /*
 |--------------------------------------------------------------------------
