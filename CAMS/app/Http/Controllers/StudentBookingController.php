@@ -58,7 +58,7 @@ class StudentBookingController extends Controller
 
         // Fetch slots: Must be active, belongs to advisor, and in the future
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'blocked']) // <--- CHANGED THIS LINE
             ->where('start_time', '>', now())
             ->orderBy('start_time', 'asc')
             ->get();
