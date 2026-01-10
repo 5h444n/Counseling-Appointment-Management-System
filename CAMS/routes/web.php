@@ -3,8 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdvisorSlotController;
 use App\Http\Controllers\StudentBookingController;
-use App\Http\Controllers\AdvisorAppointmentController; // <--- Added for Task #9
+use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdvisorScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 
     // Action Buttons (Approve/Decline Requests)
     Route::patch('/advisor/appointments/{id}', [AdvisorAppointmentController::class, 'updateStatus'])->name('advisor.appointments.update');
+    Route::get('/advisor/schedule', [AdvisorScheduleController::class, 'index'])->name('advisor.schedule');
 
 });
 
