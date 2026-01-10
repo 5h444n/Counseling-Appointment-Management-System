@@ -89,9 +89,22 @@ class StudentBookingController extends Controller
                     throw new \Exception('You have already booked this slot (Check your Pending/Approved list).');
                 }
 
+                // Generate a Unique Token (e.g., CSE-8492-X)
                 $deptCode = optional(Auth::user()->department)->code ?? 'GEN';
                 $userId = Auth::id();
-                $token = strtoupper("{$deptCode}-{$userId}-" . chr(rand(65, 90)));
+                
+                // Generate a serial (Random letter A-Z) and ensure uniqueness
+                $maxAttempts = 26; // Maximum 26 letters
+                $attempts = 0;
+                do {
+                    $serial = chr(rand(65, 90));
+                    $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
+                    $attempts++;
+
+                    if ($attempts >= $maxAttempts) {
+                        throw new \Exception('Unable to generate a unique token. Please try again.');
+                    }
+                } while (Appointment::where('token', $token)->exists());
 
                 $appointment = Appointment::create([
                     'student_id' => Auth::id(),
