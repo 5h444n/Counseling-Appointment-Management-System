@@ -173,17 +173,17 @@ class StudentBookingController extends Controller
         return view('student.appointments.index', compact('appointments'));
     }
 
-    public function joinWaitlist(Request $request, $slotId)
+public function joinWaitlist(Request $request, $slotId)
 {
     $user = Auth::user();
-    $slot = AppointmentSlot::findOrFail($slotId);
+    $slot = \App\Models\AppointmentSlot::findOrFail($slotId);
 
-    // Validation: Can only join if blocked
+    // 1. Validation: Can only join if status is 'blocked'
     if ($slot->status !== 'blocked') {
         return back()->with('error', 'This slot is currently available. You can book it directly.');
     }
 
-    // Validation: Prevent duplicates
+    // 2. Validation: Prevent duplicates
     $exists = \App\Models\Waitlist::where('slot_id', $slotId)
         ->where('student_id', $user->id)
         ->exists();
@@ -192,7 +192,7 @@ class StudentBookingController extends Controller
         return back()->with('error', 'You are already on the waitlist for this slot.');
     }
 
-    // Create Entry
+    // 3. Create Entry
     \App\Models\Waitlist::create([
         'slot_id' => $slotId,
         'student_id' => $user->id,
@@ -200,4 +200,6 @@ class StudentBookingController extends Controller
 
     return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
 }
+
+
 }
