@@ -67,15 +67,9 @@ Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
     // Appointment History
     Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
+    Route::post('/waitlist/{slot_id}', [StudentBookingController::class, 'joinWaitlist'])->name('waitlist.join');
 });
 
-// routes/web.php
-
-Route::middleware(['auth', 'student', 'verified'])->group(function () {
-    // ... existing routes
-    Route::post('/waitlist/{slot_id}', [App\Http\Controllers\StudentBookingController::class, 'joinWaitlist'])
-        ->name('waitlist.join');
-});
 
 
 // =========================================================================
