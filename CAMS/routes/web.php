@@ -63,10 +63,18 @@ Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
 
     // Appointment Submission: Process the booking request (stricter rate limit)
     Route::post('/student/book', [StudentBookingController::class, 'store'])->middleware('throttle:10,1')->name('student.book.store');
-    
+
     // Appointment History
     Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
+});
+
+// routes/web.php
+
+Route::middleware(['auth', 'student', 'verified'])->group(function () {
+    // ... existing routes
+    Route::post('/waitlist/{slot_id}', [App\Http\Controllers\StudentBookingController::class, 'joinWaitlist'])
+        ->name('waitlist.join');
 });
 
 
