@@ -7,125 +7,92 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AppointmentSlot;
 use App\Models\Appointment;
-use App\Models\Department;
+use App\Models\Waitlist;
+use App\Models\Department; // <--- ADDED THIS IMPORT
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class StudentBookingController extends Controller
 {
-    /**
-     * 1. List all Advisors (Matches index.blade.php)
-     */
     public function index(Request $request)
     {
-        // Validate query parameters
-        $request->validate([
-            'search' => 'nullable|string|max:100',
-            'department_id' => 'nullable|integer|exists:departments,id',
-        ]);
-
-        // Start query for Advisors only, eager load department for performance
-        $query = User::where('role', 'advisor')->with('department');
-
-        // Handle Search (Name) - escape LIKE wildcards for security
-        if ($request->filled('search')) {
-            $search = str_replace(['%', '_'], ['\%', '\_'], $request->search);
-            $query->where('name', 'like', '%' . $search . '%');
-        }
-
-        // Handle Filter (Department)
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
-        $advisors = $query->get();
-
-        // Get departments for the dropdown filter
+        // 1. Fetch Departments for the Filter Dropdown
         $departments = Department::all();
 
+        // 2. Build the Advisor Query
+        $query = User::where('role', 'advisor')->with('department');
+
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->get('department_id'));
+        }
+
+        $advisors = $query->paginate(12);
+
+        // 3. Pass both 'advisors' AND 'departments' to the view
         return view('student.advisors.index', compact('advisors', 'departments'));
     }
 
-    /**
-     * 2. Show Slots for specific Advisor (Matches show.blade.php)
-     */
     public function show($advisorId)
     {
-        // Ensure we only show advisor profiles
         $advisor = User::where('role', 'advisor')->with('department')->findOrFail($advisorId);
 
-        // Fetch slots: Must be active, belongs to advisor, and in the future
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->whereIn('status', ['active', 'blocked']) // <--- CHANGED THIS LINE
+            ->whereIn('status', ['active', 'blocked'])
             ->where('start_time', '>', now())
             ->orderBy('start_time', 'asc')
             ->get();
 
-        return view('student.advisors.show', compact('advisor', 'slots'));
+        $waitlistedSlotIds = Waitlist::where('student_id', Auth::id())
+            ->pluck('slot_id')
+            ->toArray();
+
+        return view('student.advisors.show', compact('advisor', 'slots', 'waitlistedSlotIds'));
     }
 
-    /**
-     * 3. Handle Booking Submission (Matches the form in show.blade.php)
-     */
     public function store(Request $request)
     {
-        // 1. Validate Form Input
         $request->validate([
             'slot_id' => 'required|exists:appointment_slots,id',
             'purpose' => 'required|string|min:10|max:500',
         ]);
 
         try {
-            // 2. Database Transaction to prevent Double Booking
             DB::transaction(function () use ($request) {
-
-                // Lock the slot row so no one else can read/write it simultaneously
                 $slot = AppointmentSlot::where('id', $request->slot_id)
                     ->lockForUpdate()
                     ->first();
 
-                // Double check status inside the lock
                 if (!$slot || $slot->status !== 'active') {
                     throw new \Exception('Sorry, this slot was just taken by someone else.');
                 }
 
-                // Ensure the slot is in the future
                 if ($slot->start_time <= now()) {
                     throw new \Exception('Cannot book a slot that has already started or passed.');
                 }
 
-                // Prevent duplicate bookings by same student for same slot
+                // Allow re-booking if previous status was 'declined'
                 $existingAppointment = Appointment::where('student_id', Auth::id())
                     ->where('slot_id', $slot->id)
+                    ->whereIn('status', ['pending', 'approved'])
                     ->exists();
 
                 if ($existingAppointment) {
-                    throw new \Exception('You have already booked this slot.');
+                    throw new \Exception('You have already booked this slot (Check your Pending/Approved list).');
                 }
 
-                // Generate a Unique Token (e.g., CSE-8492-X)
-                // 1. Get Department Code (e.g., CSE)
-                $deptCode = Auth::user()->department->code ?? 'GEN';
-
-                // 2. Get User ID (e.g., 123)
+                $deptCode = optional(Auth::user()->department)->code ?? 'GEN';
                 $userId = Auth::id();
+                $token = strtoupper("{$deptCode}-{$userId}-" . chr(rand(65, 90)));
 
-                // 3. Generate a Serial (Random letter A-Z) and ensure uniqueness
-                $maxAttempts = 26; // Maximum 26 letters
-                $attempts = 0;
-                do {
-                    $serial = chr(rand(65, 90));
-                    $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
-                    $attempts++;
-
-                    if ($attempts >= $maxAttempts) {
-                        throw new \Exception('Unable to generate a unique token. Please try again.');
-                    }
-                } while (Appointment::where('token', $token)->exists());
-
-                // Create the Appointment
                 $appointment = Appointment::create([
                     'student_id' => Auth::id(),
                     'slot_id'    => $slot->id,
@@ -134,72 +101,43 @@ class StudentBookingController extends Controller
                     'token'      => $token,
                 ]);
 
-                // Mark slot as blocked
                 $slot->update(['status' => 'blocked']);
 
-                // Log successful booking
-                Log::info('Appointment booked successfully', [
-                    'student_id' => Auth::id(),
-                    'appointment_id' => $appointment->id,
-                    'token' => $token,
-                    'slot_id' => $slot->id,
-                ]);
+                // Remove from waitlist if they successfully book it
+                Waitlist::where('slot_id', $slot->id)->where('student_id', Auth::id())->delete();
+
+                Log::info('Appointment booked successfully', ['id' => $appointment->id]);
             });
 
-            // 3. Success Redirect
             return redirect()->route('dashboard')->with('success', 'Appointment booked successfully! Wait for approval.');
 
         } catch (\Exception $e) {
-            // 4. Error Redirect
-            Log::warning('Appointment booking failed', [
-                'student_id' => Auth::id(),
-                'slot_id' => $request->slot_id,
-                'error' => $e->getMessage(),
-            ]);
             return back()->with('error', $e->getMessage());
         }
     }
 
-    /**
-     * 4. List Student's Appointment History
-     */
-    public function myAppointments()
+    public function joinWaitlist(Request $request, $slotId)
     {
-        $appointments = Appointment::with(['slot.advisor', 'documents'])
-            ->where('student_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = Auth::user();
+        $slot = AppointmentSlot::findOrFail($slotId);
 
-        return view('student.appointments.index', compact('appointments'));
+        if ($slot->status !== 'blocked') {
+            return back()->with('error', 'This slot is currently available. You can book it directly.');
+        }
+
+        $exists = Waitlist::where('slot_id', $slotId)
+            ->where('student_id', $user->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'You are already on the waitlist for this slot.');
+        }
+
+        Waitlist::create([
+            'slot_id' => $slotId,
+            'student_id' => $user->id,
+        ]);
+
+        return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
     }
-
-public function joinWaitlist(Request $request, $slotId)
-{
-    $user = Auth::user();
-    $slot = \App\Models\AppointmentSlot::findOrFail($slotId);
-
-    // 1. Validation: Can only join if status is 'blocked'
-    if ($slot->status !== 'blocked') {
-        return back()->with('error', 'This slot is currently available. You can book it directly.');
-    }
-
-    // 2. Validation: Prevent duplicates
-    $exists = \App\Models\Waitlist::where('slot_id', $slotId)
-        ->where('student_id', $user->id)
-        ->exists();
-
-    if ($exists) {
-        return back()->with('error', 'You are already on the waitlist for this slot.');
-    }
-
-    // 3. Create Entry
-    \App\Models\Waitlist::create([
-        'slot_id' => $slotId,
-        'student_id' => $user->id,
-    ]);
-
-    return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
-}
-
-
 }
