@@ -97,13 +97,13 @@ class StudentBookingController extends Controller
                 $maxAttempts = 26; // Maximum 26 letters
                 $attempts = 0;
                 do {
-                    $serial = chr(rand(65, 90));
-                    $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
-                    $attempts++;
-
                     if ($attempts >= $maxAttempts) {
                         throw new \Exception('Unable to generate a unique token. Please try again.');
                     }
+                    
+                    $serial = chr(random_int(65, 90));
+                    $token = strtoupper("{$deptCode}-{$userId}-{$serial}");
+                    $attempts++;
                 } while (Appointment::where('token', $token)->exists());
 
                 $appointment = Appointment::create([
