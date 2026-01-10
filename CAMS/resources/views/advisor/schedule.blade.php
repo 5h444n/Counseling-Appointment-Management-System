@@ -31,9 +31,10 @@
                                         <span class="font-semibold">Purpose:</span> {{ Str::limit($appt->purpose, 50) }}
                                     </div>
 
-                                    <button class="w-full bg-orange-600 text-white text-sm font-bold py-2 rounded hover:bg-orange-700 transition">
-                                        Start Session
-                                    </button>
+                                    <a href="{{ route('advisor.minutes.create', $appt->id) }}"
+   class="block w-full text-center bg-orange-600 text-white text-sm font-bold py-2 rounded hover:bg-orange-700 transition">
+    Start Session
+</a>
                                 </div>
                             @endforeach
                         </div>
@@ -75,9 +76,14 @@
                                                 {{ Str::limit($appt->purpose, 40) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="#" class="text-indigo-600 hover:text-indigo-900 font-bold border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
-                                                    Write Note (MOM)
-                                                </a>
+                                                <a href="{{ route('advisor.minutes.create', $appt->id) }}"
+   class="text-indigo-600 hover:text-indigo-900 font-bold border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
+    @if($appt->minute)
+        Edit Note
+    @else
+        Write Note (MOM)
+    @endif
+</a>
                                             </td>
                                         </tr>
                                     @endforeach

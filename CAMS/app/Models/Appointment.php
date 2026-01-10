@@ -32,4 +32,9 @@ class Appointment extends Model
     {
         return $this->hasMany(AppointmentDocument::class);
     }
+
+    public function minute()
+{
+    return $this->hasOne(Minute::class);
+}
 }
