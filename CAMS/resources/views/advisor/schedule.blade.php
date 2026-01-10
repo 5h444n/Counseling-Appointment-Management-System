@@ -75,9 +75,14 @@
                                                 {{ Str::limit($appt->purpose, 40) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="#" class="text-indigo-600 hover:text-indigo-900 font-bold border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
-                                                    Write Note (MOM)
-                                                </a>
+                                                <a href="{{ route('advisor.minutes.create', $appt->id) }}"
+   class="text-indigo-600 hover:text-indigo-900 font-bold border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
+    @if($appt->minute)
+        Edit Note
+    @else
+        Write Note (MOM)
+    @endif
+</a>
                                             </td>
                                         </tr>
                                     @endforeach

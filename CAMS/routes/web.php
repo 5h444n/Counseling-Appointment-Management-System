@@ -6,6 +6,7 @@ use App\Http\Controllers\StudentBookingController;
 use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
+use App\Http\Controllers\AdvisorMinuteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +93,10 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
     // Action Buttons (Approve/Decline Requests)
     Route::patch('/advisor/appointments/{id}', [AdvisorAppointmentController::class, 'updateStatus'])->name('advisor.appointments.update');
     Route::get('/advisor/schedule', [AdvisorScheduleController::class, 'index'])->name('advisor.schedule');
+
+    // --- Task #16: MOM Notes ---
+    Route::get('/advisor/appointments/{id}/note', [AdvisorMinuteController::class, 'create'])->name('advisor.minutes.create');
+    Route::post('/advisor/appointments/{id}/note', [AdvisorMinuteController::class, 'store'])->name('advisor.minutes.store');
 
 });
 
