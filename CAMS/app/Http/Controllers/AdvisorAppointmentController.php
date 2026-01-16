@@ -40,7 +40,7 @@ class AdvisorAppointmentController extends Controller
 
         // Security check: ensure this appointment belongs to the logged-in advisor
         if ($appointment->slot->advisor_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+            return back()->with('error', 'Unauthorized action.');
         }
 
         // Prevent modifying already processed appointments
@@ -66,7 +66,7 @@ class AdvisorAppointmentController extends Controller
                 Log::error("Event Error: " . $e->getMessage());
             }
 
-            return back()->with('success', 'Request declined. Slot is now OPEN and waitlist notified.');
+            return back()->with('success', 'Request Declined.');
         }
 
         // --- APPROVE FLOW ---
@@ -77,6 +77,6 @@ class AdvisorAppointmentController extends Controller
             'appointment_id' => $appointment->id
         ]);
 
-        return back()->with('success', 'Appointment approved successfully.');
+        return back()->with('success', 'Appointment Confirmed!');
     }
 }

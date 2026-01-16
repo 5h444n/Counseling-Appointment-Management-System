@@ -46,7 +46,7 @@ class StudentBookingController extends Controller
         $advisor = User::where('role', 'advisor')->with('department')->findOrFail($advisorId);
 
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->whereIn('status', ['active', 'blocked'])
+            ->where('status', 'active')
             ->where('start_time', '>', now())
             ->orderBy('start_time', 'asc')
             ->get();
@@ -152,5 +152,15 @@ class StudentBookingController extends Controller
         ]);
 
         return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
+    }
+
+    public function myAppointments()
+    {
+        $appointments = Appointment::where('student_id', Auth::id())
+            ->with(['slot.advisor.department'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('student.appointments.index', compact('appointments'));
     }
 }
