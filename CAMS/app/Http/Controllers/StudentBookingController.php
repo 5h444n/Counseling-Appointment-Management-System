@@ -10,8 +10,9 @@ use App\Models\Appointment;
 use App\Models\Waitlist;
 use App\Models\Department; 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Events\SlotFreedUp;
+use Illuminate\Http\RedirectResponse;
 
 class StudentBookingController extends Controller
 {
@@ -185,5 +186,76 @@ class StudentBookingController extends Controller
             ->get();
 
         return view('student.appointments.index', compact('appointments'));
+    }
+
+    public function cancel(Appointment $appointment): RedirectResponse
+    {
+        $studentId = Auth::id();
+
+        // We'll store the slot id to trigger the event AFTER the DB transaction commits.
+        $slotIdToNotify = null;
+
+        DB::transaction(function () use ($appointment, $studentId, &$slotIdToNotify) {
+
+            // Lock the appointment row to prevent concurrent updates.
+            $lockedAppointment = Appointment::query()
+                ->whereKey($appointment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Authorization: student can cancel ONLY their own appointment
+            if ((int) $lockedAppointment->student_id !== (int) $studentId) {
+                abort(403, 'You are not authorized to cancel this appointment.');
+            }
+
+            // Only allow cancel if appointment is pending/approved
+            $allowedStatuses = ['pending', 'approved'];
+            if (!in_array($lockedAppointment->status, $allowedStatuses, true)) {
+                abort(422, 'This appointment cannot be cancelled.');
+            }
+
+            // Lock the slot row too (race-condition safety)
+            $lockedSlot = AppointmentSlot::query()
+                ->whereKey($lockedAppointment->appointment_slot_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Only allow cancellation if the slot start time is in the future
+            // (Laravel timestamps are Carbon instances when casted; otherwise Carbon parses it)
+            $startTime = $lockedSlot->start_time instanceof \Carbon\Carbon
+                ? $lockedSlot->start_time
+                : \Carbon\Carbon::parse($lockedSlot->start_time);
+
+            if (!$startTime->isFuture()) {
+                abort(422, 'You can only cancel upcoming appointments.');
+            }
+
+            // Update appointment status -> cancelled
+            $lockedAppointment->update([
+                'status' => 'cancelled',
+            ]);
+
+            // Free the slot immediately -> active
+            $lockedSlot->update([
+                'status' => 'active',
+            ]);
+
+            // Save slot ID for notification after commit
+            $slotIdToNotify = $lockedSlot->id;
+        });
+
+        // Trigger waitlist notification ONLY after the DB commit (industry standard).
+        if ($slotIdToNotify !== null) {
+            DB::afterCommit(function () use ($slotIdToNotify) {
+                $slot = AppointmentSlot::find($slotIdToNotify);
+                if ($slot) {
+                    event(new SlotFreedUp($slot));
+                }
+            });
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', 'Appointment cancelled successfully.');
     }
 }
