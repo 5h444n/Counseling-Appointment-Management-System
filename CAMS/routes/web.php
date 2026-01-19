@@ -70,6 +70,9 @@ Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
     Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
     Route::post('/waitlist/{slot_id}', [StudentBookingController::class, 'joinWaitlist'])->name('waitlist.join');
+
+    // Cancel Appointment
+    Route::patch('/student/appointments/{appointment}/cancel', [StudentBookingController::class, 'cancel'])->name('student.appointments.cancel');
 });
 
 
