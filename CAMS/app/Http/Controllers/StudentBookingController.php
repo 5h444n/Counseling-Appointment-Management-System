@@ -178,14 +178,41 @@ class StudentBookingController extends Controller
         return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
     }
 
-    public function myAppointments()
+    public function myAppointments(Request $request)
     {
-        $appointments = Appointment::where('student_id', Auth::id())
-            ->with(['slot.advisor.department'])
-            ->orderBy('created_at', 'desc')
+        $studentId = Auth::id();
+        $activeTab = $request->query('tab', 'upcoming');
+
+        // Upcoming: pending/approved AND slot start_time > now
+        $upcomingAppointments = Appointment::query()
+            ->with(['slot', 'advisor', 'advisor.department'])
+            ->where('student_id', $studentId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->whereHas('slot', function ($q) {
+                $q->where('start_time', '>', now());
+            })
+            ->orderByDesc('created_at')
             ->get();
 
-        return view('student.appointments.index', compact('appointments'));
+        // History: everything else (cancelled/declined/completed/no_show OR slot is past)
+        $historyAppointments = Appointment::query()
+            ->with(['slot', 'advisor', 'advisor.department'])
+            ->where('student_id', $studentId)
+            ->where(function ($q) {
+                $q->whereNotIn('status', ['pending', 'approved'])
+                  ->orWhereHas('slot', function ($slotQ) {
+                      $slotQ->where('start_time', '<=', now());
+                  });
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        // IMPORTANT FIX: use the correct blade path
+        return view('student.appointments.index', compact(
+            'upcomingAppointments',
+            'historyAppointments',
+            'activeTab'
+        ));
     }
 
     public function cancel(Appointment $appointment): RedirectResponse
