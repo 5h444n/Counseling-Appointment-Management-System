@@ -7,6 +7,20 @@
 
     @php
         $isUpcoming = ($activeTab ?? 'upcoming') === 'upcoming';
+        
+        $statusBadgeClasses = [
+            'pending'   => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            'approved'  => 'bg-green-100 text-green-800 border-green-200',
+            'declined'  => 'bg-red-100 text-red-800 border-red-200',
+            'completed' => 'bg-blue-100 text-blue-800 border-blue-200',
+            'no_show'   => 'bg-orange-100 text-orange-800 border-orange-200',
+            'cancelled' => 'bg-gray-100 text-gray-800 border-gray-200',
+        ];
+
+        $formatStatus = function (?string $status): string {
+            if (!$status) return 'Unknown';
+            return ucwords(str_replace('_', ' ', $status));
+        };
     @endphp
 
     <div class="flex gap-2 mb-6">
@@ -61,18 +75,33 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($app->status === 'approved')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
-                                @elseif($app->status === 'pending')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                @elseif($app->status === 'declined')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Declined</span>
-                                @endif
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $statusBadgeClasses[$app->status] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
+                                    {{ $formatStatus($app->status) }}
+                                </span>
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                @php
+                                    $isCancelable = in_array($app->status, ['pending', 'approved'], true)
+                                        && optional($app->slot)->start_time
+                                        && \Carbon\Carbon::parse($app->slot)->start_time->isFuture();
+                                @endphp
+
+                                @if($isCancelable)
+                                    <form method="POST" 
+                                          action="{{ route('student.appointments.cancel', $app) }}" 
+                                          onsubmit="return confirm('Cancel this appointment?')"
+                                          class="inline-block">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="px-3 py-1 text-xs font-semibold rounded-md border text-red-600 border-red-200 hover:bg-red-50">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                @endif
+                                
                                 @if($app->status === 'approved')
-                                    <button onclick="window.print()" class="text-indigo-600 hover:text-indigo-900 text-xs">Print Slip</button>
+                                    <button onclick="window.print()" class="text-indigo-600 hover:text-indigo-900 text-xs ml-2">Print Slip</button>
                                 @endif
                             </td>
                         </tr>
@@ -97,7 +126,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advisor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -127,20 +155,14 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($app->status === 'approved')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
-                                @elseif($app->status === 'pending')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                @elseif($app->status === 'declined')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Declined</span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ ucfirst($app->status) }}</span>
-                                @endif
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $statusBadgeClasses[$app->status] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
+                                    {{ $formatStatus($app->status) }}
+                                </span>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-gray-400">
+                            <td colspan="4" class="px-6 py-10 text-center text-gray-400">
                                 No past appointments.
                             </td>
                         </tr>
