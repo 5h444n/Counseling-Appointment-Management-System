@@ -60,7 +60,7 @@ The system uses a modern TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire)
 | **Appointment Tracking** | Track appointment status (Pending, Approved, Declined) |
 | **Appointment History** | View all past and upcoming appointments |
 | **Waitlist System** | Join waitlist for booked slots and get notified when they open up |
-| **Document Upload** | Attach optional documents (PDF, DOC, DOCX, JPG, PNG) up to 5MB |
+| **Document Upload** | Attach optional documents (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG) up to 100MB |
 
 ### 👨‍🏫 Advisor Features
 | Feature | Description |
@@ -543,7 +543,7 @@ Output:
 **Step 3: Confirm Booking**
 - Modal popup for booking confirmation
 - Enter appointment purpose (required, minimum 10 characters)
-- Optionally attach a document (PDF, DOC, DOCX, JPG, PNG - Max 5MB)
+- Optionally attach a document (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG - Max 100MB)
 - Submit for advisor approval
 
 **Step 4: Receive Token**
@@ -672,8 +672,8 @@ Students can attach supporting documents when booking appointments:
 
 **Features:**
 - Optional file upload during booking
-- Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG
-- Maximum file size: 5MB
+- Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG, GIF, BMP, SVG
+- Maximum file size: 100MB
 - Files associated with appointments via Eloquent relationships
 - Secure storage with validation
 

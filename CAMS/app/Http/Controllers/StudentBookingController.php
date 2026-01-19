@@ -77,7 +77,7 @@ class StudentBookingController extends Controller
         $request->validate([
             'slot_id' => 'required|exists:appointment_slots,id',
             'purpose' => 'required|string|min:10|max:500', // Note: Minimum 10 characters required!
-            'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // Max 5MB
+            'document' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,txt,jpg,jpeg,png,gif,bmp,svg|max:102400', // Max 100MB
         ]);
 
         try {

@@ -93,23 +93,23 @@
 **Status:** NOW FULLY IMPLEMENTED  
 **Implementation Details:**
 - ✅ File upload input added to booking form
-- ✅ Validation for file types (PDF, DOC, DOCX, JPG, JPEG, PNG) and size (max 5MB)
+- ✅ Validation for file types (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG, GIF, BMP, SVG) and size (max 100MB)
 - ✅ Files stored in `storage/app/public/appointment_documents`
 - ✅ `AppointmentDocument` model saves file metadata
-- ✅ Comprehensive test coverage (8 tests, 45 assertions)
+- ✅ Comprehensive test coverage (11 tests, 58 assertions)
 
 **Features:**
 - Students can attach optional documents when booking appointments
-- Supported formats: PDF, DOC, DOCX, JPG, PNG
-- Maximum file size: 5MB
+- Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG, GIF, BMP, SVG
+- Maximum file size: 100MB
 - Files are properly stored and associated with appointments
 - Validation prevents invalid file types and oversized files
 
 **Testing:**
-- ✅ File upload with various formats (PDF, DOCX, JPG)
+- ✅ File upload with various formats (PDF, DOCX, PPTX, XLSX, JPG)
 - ✅ Booking without document (optional)
 - ✅ Invalid file type rejection
-- ✅ File size limit enforcement
+- ✅ File size limit enforcement (100MB)
 - ✅ Eloquent relationship verification
 
 ### Issue #11: Auto-Cancellation Service ✅ ALREADY IMPLEMENTED (Now Verified)

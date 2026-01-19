@@ -115,6 +115,78 @@ class FileUploadTest extends TestCase
     }
 
     /**
+     * Test that a student can book an appointment with a PPTX presentation.
+     */
+    public function test_student_can_book_appointment_with_pptx_presentation(): void
+    {
+        $cseDept = Department::where('code', 'CSE')->first();
+        $student = User::factory()->create(['role' => 'student', 'department_id' => $cseDept->id]);
+        $advisor = User::factory()->advisor()->create(['department_id' => $cseDept->id]);
+
+        $slot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::now()->addDays(1),
+            'end_time' => Carbon::now()->addDays(1)->addMinutes(30),
+            'status' => 'active',
+        ]);
+
+        $file = UploadedFile::fake()->create('presentation.pptx', 2048); // 2MB
+
+        $response = $this
+            ->actingAs($student)
+            ->post(route('student.book.store'), [
+                'slot_id' => $slot->id,
+                'purpose' => 'I need academic counseling regarding my course selection.',
+                'document' => $file,
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        // Verify document was saved with correct original name
+        $appointment = Appointment::where('student_id', $student->id)->first();
+        $this->assertDatabaseHas('appointment_documents', [
+            'appointment_id' => $appointment->id,
+            'original_name' => 'presentation.pptx',
+        ]);
+    }
+
+    /**
+     * Test that a student can book an appointment with an XLSX spreadsheet.
+     */
+    public function test_student_can_book_appointment_with_xlsx_spreadsheet(): void
+    {
+        $cseDept = Department::where('code', 'CSE')->first();
+        $student = User::factory()->create(['role' => 'student', 'department_id' => $cseDept->id]);
+        $advisor = User::factory()->advisor()->create(['department_id' => $cseDept->id]);
+
+        $slot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::now()->addDays(1),
+            'end_time' => Carbon::now()->addDays(1)->addMinutes(30),
+            'status' => 'active',
+        ]);
+
+        $file = UploadedFile::fake()->create('grades.xlsx', 1024); // 1MB
+
+        $response = $this
+            ->actingAs($student)
+            ->post(route('student.book.store'), [
+                'slot_id' => $slot->id,
+                'purpose' => 'I need academic counseling regarding my course selection.',
+                'document' => $file,
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        // Verify document was saved with correct original name
+        $appointment = Appointment::where('student_id', $student->id)->first();
+        $this->assertDatabaseHas('appointment_documents', [
+            'appointment_id' => $appointment->id,
+            'original_name' => 'grades.xlsx',
+        ]);
+    }
+
+    /**
      * Test that a student can book an appointment with an image (JPG).
      */
     public function test_student_can_book_appointment_with_jpg_image(): void
@@ -221,9 +293,9 @@ class FileUploadTest extends TestCase
     }
 
     /**
-     * Test that files larger than 5MB are rejected.
+     * Test that files larger than 100MB are rejected.
      */
-    public function test_files_larger_than_5mb_are_rejected(): void
+    public function test_files_larger_than_100mb_are_rejected(): void
     {
         $cseDept = Department::where('code', 'CSE')->first();
         $student = User::factory()->create(['role' => 'student', 'department_id' => $cseDept->id]);
@@ -236,8 +308,8 @@ class FileUploadTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Try to upload a file larger than 5MB
-        $file = UploadedFile::fake()->create('large-file.pdf', 6144); // 6MB
+        // Try to upload a file larger than 100MB
+        $file = UploadedFile::fake()->create('large-file.pdf', 102500); // 100.09MB (slightly over limit)
 
         $response = $this
             ->actingAs($student)
@@ -299,7 +371,7 @@ class FileUploadTest extends TestCase
     public function test_multiple_accepted_formats(): void
     {
         $cseDept = Department::where('code', 'CSE')->first();
-        $acceptedFormats = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+        $acceptedFormats = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'jpg', 'jpeg', 'png'];
         
         foreach ($acceptedFormats as $index => $format) {
             // Create a new student for each test to avoid rate limiting
