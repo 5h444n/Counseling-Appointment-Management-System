@@ -219,8 +219,8 @@ class WaitlistFeatureTest extends TestCase
         $listener = new NotifyWaitlist();
         $listener->handle($event);
 
-        // First student should receive email
-        Mail::assertSent(SlotAvailableNotification::class, function ($mail) use ($student1) {
+        // First student should receive email (queued since mailable implements ShouldQueue)
+        Mail::assertQueued(SlotAvailableNotification::class, function ($mail) use ($student1) {
             return $mail->hasTo($student1->email);
         });
 

@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\AppointmentSlot;
 use App\Models\User;
 
-class SlotAvailableNotification extends Mailable
+class SlotAvailableNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
