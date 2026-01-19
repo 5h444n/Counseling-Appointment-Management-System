@@ -55,10 +55,11 @@ The system uses a modern TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire)
 |---------|-------------|
 | **Advisor Discovery** | Search and filter advisors by name or department |
 | **Real-time Availability** | View all available time slots for any advisor |
-| **Smart Booking** | Book appointments with purpose description and optional attachments |
+| **Smart Booking** | Book appointments with purpose description |
 | **Digital Tokens** | Receive unique appointment tokens (e.g., CSE-123-A) |
 | **Appointment Tracking** | Track appointment status (Pending, Approved, Declined) |
 | **Appointment History** | View all past and upcoming appointments |
+| **Waitlist System** | Join waitlist for booked slots and get notified when they open up |
 
 ### 👨‍🏫 Advisor Features
 | Feature | Description |
@@ -68,16 +69,20 @@ The system uses a modern TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire)
 | **Request Dashboard** | View all pending appointment requests |
 | **Accept/Decline Actions** | Approve or decline student requests with one click |
 | **Slot Protection** | Prevent double-booking with database-level locks |
+| **Schedule View** | View upcoming and past appointments in chronological order |
+| **Meeting Minutes** | Add session notes after completing appointments |
 
 ### 🔐 Authentication & Security
 | Feature | Description |
 |---------|-------------|
 | **Laravel Breeze** | Complete authentication scaffolding |
 | **Role-based Access** | Student, Advisor, and Admin roles with middleware protection |
-| **Email Verification** | Optional email verification for users |
+| **Email Verification** | Email verification routes available (optional integration) |
 | **Password Reset** | Secure password reset via email |
 | **CSRF Protection** | Built-in Laravel CSRF protection |
 | **SQL Injection Prevention** | Eloquent ORM with parameterized queries |
+| **Rate Limiting** | API throttling (60/min general, 10/min booking, 20/min slot creation) |
+| **Event-Driven Notifications** | Asynchronous waitlist notifications with queue support |
 
 ### 🎨 User Experience
 | Feature | Description |
@@ -394,6 +399,13 @@ Terminal 2 - Vite (for hot-reloading):
 npm run dev
 ```
 
+Terminal 3 - Queue Worker (for waitlist notifications):
+```bash
+php artisan queue:listen
+```
+
+> **Note**: The queue worker is optional for development but **required** for waitlist email notifications to function.
+
 ### Access the Application
 
 Open your browser and navigate to:
@@ -407,6 +419,28 @@ Build optimized frontend assets:
 
 ```bash
 npm run build
+```
+
+### Queue Configuration for Production
+
+For production, update `.env` to use a persistent queue driver:
+
+```env
+QUEUE_CONNECTION=database  # or redis for better performance
+```
+
+Then run migrations to create queue tables:
+
+```bash
+php artisan queue:table
+php artisan migrate
+```
+
+Start the queue worker as a background service:
+
+```bash
+# Using supervisor or systemd recommended for production
+php artisan queue:work --daemon
 ```
 
 ---
@@ -507,14 +541,18 @@ Output:
 
 **Step 3: Confirm Booking**
 - Modal popup for booking confirmation
-- Enter appointment purpose (required)
-- Optional file attachment support
+- Enter appointment purpose (required, minimum 10 characters)
 - Submit for advisor approval
 
 **Step 4: Receive Token**
 - Unique token generated (e.g., CSE-123-A)
 - Token format: `DEPT_CODE-USER_ID-SERIAL`
 - Token displayed in dashboard and appointments list
+
+**Alternative: Join Waitlist**
+- If slot is booked, students can join the waitlist
+- Receive email notification when slot becomes available
+- First-come-first-served notification system
 
 ### 4. Appointment Token System
 
@@ -525,9 +563,14 @@ Token Format: [DEPARTMENT_CODE]-[USER_ID]-[SERIAL_LETTER]
 Example: CSE-123-A
 
 Components:
-- CSE: Department code (e.g., Computer Science)
+- CSE: Department code (e.g., Computer Science, or "GEN" if no department)
 - 123: Student's user ID
 - A: Random serial letter (A-Z)
+
+Token Generation:
+- Ensures uniqueness by checking existing tokens
+- Maximum 26 attempts (one per letter A-Z)
+- Automatic retry if token collision detected
 ```
 
 ### 5. Appointment Status Workflow
@@ -543,12 +586,17 @@ Components:
   ▼         ▼
 ┌─────┐  ┌──────┐
 │APPROVED│  │DECLINED│
-└────┬───┘  └────────┘
-     │
+└────┬───┘  └────┬───┘
+     │           │
+     │           └─→ Slot becomes active, waitlist notified
      ▼
 ┌──────────┐
-│COMPLETED │ (Future feature)
+│COMPLETED │ ← After advisor adds meeting notes
 └──────────┘
+
+Additional States (Database-ready):
+- CANCELLED: Student cancels before appointment (not yet implemented)
+- NO_SHOW: Student doesn't attend (requires manual marking)
 ```
 
 ### 6. Double-Booking Prevention
@@ -568,6 +616,46 @@ DB::transaction(function () {
     // Create appointment and mark slot as blocked
 });
 ```
+
+### 7. Waitlist System
+
+The waitlist feature allows students to queue for blocked slots:
+
+**How It Works:**
+1. Student views a booked slot and clicks "Join Waitlist"
+2. System adds student to waitlist queue (FIFO - First In First Out)
+3. When advisor declines an appointment, the slot becomes available
+4. System automatically emails the first student in the waitlist
+5. Notified student can immediately book the newly available slot
+
+**Technical Implementation:**
+- Event-driven architecture using `SlotFreedUp` event
+- `NotifyWaitlist` listener handles email notifications
+- Database table ensures one entry per student per slot
+- Queue workers process notifications asynchronously
+
+**Features:**
+- Automatic email notifications via `SlotAvailableNotification` mailable
+- FIFO queue ordering based on `created_at` timestamp
+- Automatic removal from waitlist upon successful booking
+- Visual indicators showing waitlist status on slot cards
+
+### 8. Meeting Minutes (MOM) System
+
+Advisors can document counseling sessions:
+
+**Workflow:**
+1. After approving an appointment, advisor conducts the session
+2. Advisor accesses "Add Notes" from their schedule view
+3. System provides form to enter session details and recommendations
+4. Upon saving, appointment status changes to "completed"
+5. Meeting notes are stored and associated with the appointment
+
+**Features:**
+- Separate notes storage in `minutes` table
+- One-to-one relationship with appointments
+- Accessible from advisor schedule view
+- Helps maintain session history and follow-ups
 
 ---
 
@@ -605,6 +693,7 @@ DB::transaction(function () {
 | GET | `/student/advisors/{id}` | View advisor slots |
 | POST | `/student/book` | Book an appointment |
 | GET | `/student/my-appointments` | View my appointments |
+| POST | `/waitlist/{slot_id}` | Join waitlist for a blocked slot |
 
 ### Advisor Routes
 
@@ -613,6 +702,11 @@ DB::transaction(function () {
 | GET | `/advisor/dashboard` | Pending requests |
 | GET | `/advisor/slots` | Manage availability |
 | POST | `/advisor/slots` | Create new slots |
+| DELETE | `/advisor/slots/{slot}` | Delete a slot |
+| PATCH | `/advisor/appointments/{id}` | Approve/Decline |
+| GET | `/advisor/schedule` | View all appointments (upcoming & past) |
+| GET | `/advisor/appointments/{id}/note` | Meeting notes form |
+| POST | `/advisor/appointments/{id}/note` | Save meeting notes |
 | DELETE | `/advisor/slots/{slot}` | Delete a slot |
 | PATCH | `/advisor/appointments/{id}` | Approve/Decline |
 
@@ -721,6 +815,20 @@ CREATE TABLE waitlists (
 );
 ```
 
+### Minutes Table (Meeting Notes)
+
+```sql
+CREATE TABLE minutes (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    appointment_id BIGINT UNSIGNED NOT NULL,
+    notes TEXT NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+    UNIQUE (appointment_id)
+);
+```
+
 ### Entity Relationship Diagram
 
 ```
@@ -732,8 +840,15 @@ CREATE TABLE waitlists (
       │                       ▼                          ▼
       │               ┌──────────────┐           ┌─────────────┐
       │               │ Appointment  │>──────────│   Waitlist  │
-      │               └──────────────┘    1:N    └─────────────┘
-      │                       │
+      │               └──────┬───────┘    1:N    └─────────────┘
+      │                      │
+      │                 ┌────┴────┐
+      │                 │1:1     1:N
+      │                 ▼         ▼
+      │           ┌─────────┐ ┌──────────────────┐
+      └───────────│ Minute  │ │AppointmentDocument│
+                  └─────────┘ └──────────────────┘
+```
       │                       │1:N
       │                       ▼
       │               ┌──────────────────┐
@@ -778,6 +893,13 @@ Department: CSE
 
 ## 🧪 Testing
 
+### Test Statistics
+
+- **Total Tests**: 154
+- **Passing**: 154 (100%)
+- **Total Assertions**: 342
+- **Test Duration**: ~6 seconds
+
 ### Run All Tests
 
 ```bash
@@ -798,6 +920,9 @@ php artisan test --testsuite=Feature
 
 # Unit tests
 php artisan test --testsuite=Unit
+
+# Specific test file
+php artisan test --filter=WaitlistFeatureTest
 ```
 
 ### Run with Coverage
@@ -810,12 +935,62 @@ php artisan test --coverage
 
 ```
 tests/
-├── Feature/           # Integration tests
-│   └── ...
+├── Feature/           # Integration tests (18 test files)
+│   ├── Auth/          # Authentication tests (9 files)
+│   ├── AdvisorAppointmentControllerTest.php
+│   ├── AdvisorSlotTest.php
+│   ├── DashboardTest.php
+│   ├── MiddlewareTest.php
+│   ├── ProfileTest.php
+│   ├── SlotOverlapDetectionTest.php
+│   ├── StudentAppointmentHistoryTest.php
+│   ├── StudentBookingControllerTest.php
+│   └── WaitlistFeatureTest.php  # 11 waitlist tests
 ├── Unit/              # Unit tests
-│   └── ...
+│   ├── ModelRelationshipsTest.php
+│   └── ExampleTest.php
 └── TestCase.php       # Base test case
 ```
+
+### Test Coverage by Area
+
+| Area | Tests | Coverage |
+|------|-------|----------|
+| Authentication | 29 | Login, registration, password management |
+| Authorization (Middleware) | 16 | Role-based access control |
+| Student Booking | 20 | Advisor search, slot viewing, booking |
+| Advisor Features | 26 | Slot management, appointment handling |
+| Waitlist System | 11 | Join waitlist, notifications, FIFO queue |
+| Slot Overlap Detection | 12 | Time conflict prevention |
+| Dashboard | 12 | Role-specific dashboard views |
+| Profile Management | 8 | CRUD operations |
+| Model Relationships | 16 | Eloquent relationship validation |
+
+---
+
+## ⚠️ Known Limitations
+
+### Features Not Yet Implemented
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **File Attachments** | Database-ready | `appointment_documents` table exists but upload logic not implemented |
+| **Admin Dashboard** | Placeholder | Route returns "Coming Soon" message |
+| **Recurring Slots** | Database-ready | `is_recurring` column exists but no generation logic |
+| **Email Verification Enforcement** | Partial | Routes exist but not enforced in workflow |
+| **Appointment Cancellation** | Not implemented | Status exists in database but no UI/logic |
+| **No-Show Auto-Marking** | Not implemented | Requires cron job or scheduled task |
+| **User Management (Admin)** | Not implemented | No UI for admin user CRUD operations |
+
+### Planned Enhancements
+
+See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendations, including:
+- Email notifications for booking/approval
+- Calendar integration (.ics file generation)
+- Two-factor authentication
+- Real-time updates with WebSockets
+- Advanced analytics dashboard
+- Mobile app (PWA)
 
 ---
 
