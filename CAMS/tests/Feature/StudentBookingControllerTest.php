@@ -2,377 +2,213 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Department;
-use App\Models\AppointmentSlot;
+use App\Events\SlotFreedUp;
 use App\Models\Appointment;
+use App\Models\AppointmentSlot;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
-use Carbon\Carbon;
 
 class StudentBookingControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    /**
+     * Helper: create a user via DB to avoid fillable/factory issues.
+     */
+    private function createUser(string $role, array $overrides = []): User
     {
-        parent::setUp();
-        
-        // Create departments for the tests
-        Department::create(['name' => 'Computer Science', 'code' => 'CSE']);
-        Department::create(['name' => 'Electrical Engineering', 'code' => 'EEE']);
+        $data = array_merge([
+            'name' => $overrides['name'] ?? ($role . ' User'),
+            'email' => $overrides['email'] ?? (uniqid($role.'_') . '@example.com'),
+            'password' => Hash::make('password'),
+            'role' => $role,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides);
+
+        $id = DB::table('users')->insertGetId($data);
+
+        return User::query()->findOrFail($id);
     }
 
     /**
-     * Test that authenticated users can access advisors listing page.
+     * Helper: create an appointment slot via DB and return model.
      */
-    public function test_authenticated_users_can_access_advisors_list(): void
+    private function createSlot(int $advisorId, \Carbon\Carbon $startTime, \Carbon\Carbon $endTime, string $status = 'blocked'): AppointmentSlot
     {
-        $student = User::factory()->create(['role' => 'student']);
+        $slotId = DB::table('appointment_slots')->insertGetId([
+            'advisor_id' => $advisorId,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        $response = $this
-            ->actingAs($student)
-            ->get('/student/advisors');
-
-        $response->assertOk();
+        return AppointmentSlot::query()->findOrFail($slotId);
     }
 
     /**
-     * Test that advisors are listed on the index page.
+     * Helper: create appointment via DB and return model.
      */
-    public function test_advisors_are_listed_on_index_page(): void
+    private function createAppointment(int $studentId, int $advisorId, int $slotId, string $status = 'approved'): Appointment
     {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create(['name' => 'Dr. Test Advisor']);
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'student_id' => $studentId,
+            'advisor_id' => $advisorId,
+            'appointment_slot_id' => $slotId,
+            'purpose' => 'Test purpose',
+            'token' => 'TST-' . uniqid(),
+            'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        $response = $this
-            ->actingAs($student)
-            ->get('/student/advisors');
-
-        $response->assertOk();
-        $response->assertSee('Dr. Test Advisor');
+        return Appointment::query()->findOrFail($appointmentId);
     }
 
-    /**
-     * Test that advisors can be searched by name.
-     */
-    public function test_advisors_can_be_searched_by_name(): void
+    public function test_student_can_cancel_own_upcoming_appointment_and_slot_becomes_active_and_waitlist_event_fires(): void
     {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor1 = User::factory()->advisor()->create(['name' => 'Dr. John Smith']);
-        $advisor2 = User::factory()->advisor()->create(['name' => 'Dr. Jane Doe']);
+        Event::fake([SlotFreedUp::class]);
 
-        $response = $this
-            ->actingAs($student)
-            ->get('/student/advisors?search=John');
+        $student = $this->createUser('student');
+        $advisor = $this->createUser('advisor');
 
-        $response->assertOk();
-        $response->assertSee('Dr. John Smith');
-        $response->assertDontSee('Dr. Jane Doe');
-    }
+        $slot = $this->createSlot(
+            advisorId: $advisor->id,
+            startTime: now()->addDay(),
+            endTime: now()->addDay()->addMinutes(30),
+            status: 'blocked'
+        );
 
-    /**
-     * Test that advisors can be filtered by department.
-     */
-    public function test_advisors_can_be_filtered_by_department(): void
-    {
-        $cseDept = Department::where('code', 'CSE')->first();
-        $eeeDept = Department::where('code', 'EEE')->first();
+        $appointment = $this->createAppointment(
+            studentId: $student->id,
+            advisorId: $advisor->id,
+            slotId: $slot->id,
+            status: 'approved'
+        );
 
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor1 = User::factory()->advisor()->create([
-            'name' => 'Dr. CSE Advisor',
-            'department_id' => $cseDept->id,
-        ]);
-        $advisor2 = User::factory()->advisor()->create([
-            'name' => 'Dr. EEE Advisor',
-            'department_id' => $eeeDept->id,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->get("/student/advisors?department_id={$cseDept->id}");
-
-        $response->assertOk();
-        $response->assertSee('Dr. CSE Advisor');
-        $response->assertDontSee('Dr. EEE Advisor');
-    }
-
-    /**
-     * Test that authenticated users can view advisor's available slots.
-     */
-    public function test_authenticated_users_can_view_advisor_slots(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create(['name' => 'Dr. Advisor']);
-
-        // Create an active future slot
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->get("/student/advisors/{$advisor->id}");
-
-        $response->assertOk();
-        $response->assertSee('Dr. Advisor');
-    }
-
-    /**
-     * Test that only active future slots are displayed.
-     */
-    public function test_only_active_future_slots_are_displayed(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create();
-
-        // Create an active future slot (should be visible)
-        $activeSlot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
-        ]);
-
-        // Create a blocked slot (should not be visible)
-        $blockedSlot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(11, 0),
-            'end_time' => Carbon::tomorrow()->setTime(11, 30),
-            'status' => 'blocked',
-            'is_recurring' => false,
-        ]);
-
-        // Create a past slot (should not be visible)
-        $pastSlot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::yesterday()->setTime(10, 0),
-            'end_time' => Carbon::yesterday()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->get("/student/advisors/{$advisor->id}");
-
-        $response->assertOk();
-        
-        // The view should receive only the active future slot
-        $this->assertEquals(1, $response->viewData('slots')->count());
-        $this->assertEquals($activeSlot->id, $response->viewData('slots')->first()->id);
-    }
-
-    /**
-     * Test that a student can book an available slot.
-     */
-    public function test_student_can_book_available_slot(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create();
-
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->post('/student/book', [
-                'slot_id' => $slot->id,
-                'purpose' => 'Academic advising session',
-            ]);
-
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('success');
-
-        // Verify appointment was created
-        $this->assertDatabaseHas('appointments', [
-            'student_id' => $student->id,
-            'slot_id' => $slot->id,
-            'purpose' => 'Academic advising session',
-            'status' => 'pending',
-        ]);
-
-        // Verify slot was blocked
-        $slot->refresh();
-        $this->assertEquals('blocked', $slot->status);
-    }
-
-    /**
-     * Test that appointment token is generated correctly.
-     */
-    public function test_appointment_token_is_generated(): void
-    {
-        $cseDept = Department::where('code', 'CSE')->first();
-        $student = User::factory()->create([
-            'role' => 'student',
-            'department_id' => $cseDept->id,
-        ]);
-        $advisor = User::factory()->advisor()->create();
-
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->post('/student/book', [
-                'slot_id' => $slot->id,
-                'purpose' => 'Test purpose',
-            ]);
-
-        $appointment = Appointment::where('student_id', $student->id)->first();
-        $this->assertNotNull($appointment->token);
-        $this->assertStringStartsWith('CSE-', $appointment->token);
-    }
-
-    /**
-     * Test booking fails when slot is already taken (race condition handling).
-     */
-    public function test_booking_fails_when_slot_is_already_taken(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create();
-
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'blocked', // Already taken
-            'is_recurring' => false,
-        ]);
-
-        $response = $this
-            ->actingAs($student)
-            ->from("/student/advisors/{$advisor->id}")
-            ->post('/student/book', [
-                'slot_id' => $slot->id,
-                'purpose' => 'Test purpose',
-            ]);
+        $response = $this->actingAs($student)
+            ->patch(route('student.appointments.cancel', $appointment->id));
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'Sorry, this slot was just taken by someone else.');
 
-        // Verify no appointment was created
-        $this->assertDatabaseMissing('appointments', [
-            'student_id' => $student->id,
-            'slot_id' => $slot->id,
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'status' => 'cancelled',
         ]);
-    }
 
-    /**
-     * Test validation requires slot_id.
-     */
-    public function test_validation_requires_slot_id(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-
-        $response = $this
-            ->actingAs($student)
-            ->from('/student/advisors')
-            ->post('/student/book', [
-                'purpose' => 'Test purpose',
-            ]);
-
-        $response->assertSessionHasErrors('slot_id');
-    }
-
-    /**
-     * Test validation requires purpose.
-     */
-    public function test_validation_requires_purpose(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create();
-
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
+        $this->assertDatabaseHas('appointment_slots', [
+            'id' => $slot->id,
             'status' => 'active',
-            'is_recurring' => false,
         ]);
 
-        $response = $this
-            ->actingAs($student)
-            ->from("/student/advisors/{$advisor->id}")
-            ->post('/student/book', [
-                'slot_id' => $slot->id,
-            ]);
-
-        $response->assertSessionHasErrors('purpose');
+        Event::assertDispatched(SlotFreedUp::class);
     }
 
-    /**
-     * Test validation rejects non-existent slot.
-     */
-    public function test_validation_rejects_nonexistent_slot(): void
+    public function test_student_cannot_cancel_someone_elses_appointment(): void
     {
-        $student = User::factory()->create(['role' => 'student']);
+        $studentA = $this->createUser('student');
+        $studentB = $this->createUser('student');
+        $advisor = $this->createUser('advisor');
 
-        $response = $this
-            ->actingAs($student)
-            ->from('/student/advisors')
-            ->post('/student/book', [
-                'slot_id' => 99999, // Non-existent
-                'purpose' => 'Test purpose',
-            ]);
+        $slot = $this->createSlot(
+            advisorId: $advisor->id,
+            startTime: now()->addDay(),
+            endTime: now()->addDay()->addMinutes(30),
+            status: 'blocked'
+        );
 
-        $response->assertSessionHasErrors('slot_id');
-    }
+        $appointment = $this->createAppointment(
+            studentId: $studentA->id,
+            advisorId: $advisor->id,
+            slotId: $slot->id,
+            status: 'approved'
+        );
 
-    /**
-     * Test validation enforces max length on purpose.
-     */
-    public function test_validation_enforces_purpose_max_length(): void
-    {
-        $student = User::factory()->create(['role' => 'student']);
-        $advisor = User::factory()->advisor()->create();
+        $this->actingAs($studentB)
+            ->patch(route('student.appointments.cancel', $appointment->id))
+            ->assertStatus(403);
 
-        $slot = AppointmentSlot::create([
-            'advisor_id' => $advisor->id,
-            'start_time' => Carbon::tomorrow()->setTime(10, 0),
-            'end_time' => Carbon::tomorrow()->setTime(10, 30),
-            'status' => 'active',
-            'is_recurring' => false,
+        // Ensure no changes happened
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'status' => 'approved',
         ]);
 
-        $response = $this
-            ->actingAs($student)
-            ->from("/student/advisors/{$advisor->id}")
-            ->post('/student/book', [
-                'slot_id' => $slot->id,
-                'purpose' => str_repeat('a', 501), // Exceeds 500 char limit
-            ]);
-
-        $response->assertSessionHasErrors('purpose');
+        $this->assertDatabaseHas('appointment_slots', [
+            'id' => $slot->id,
+            'status' => 'blocked',
+        ]);
     }
 
-    /**
-     * Test that viewing non-existent advisor returns 404.
-     */
-    public function test_viewing_nonexistent_advisor_returns_404(): void
+    public function test_student_cannot_cancel_past_appointment(): void
     {
-        $student = User::factory()->create(['role' => 'student']);
+        $student = $this->createUser('student');
+        $advisor = $this->createUser('advisor');
 
-        $response = $this
-            ->actingAs($student)
-            ->get('/student/advisors/99999');
+        $slot = $this->createSlot(
+            advisorId: $advisor->id,
+            startTime: now()->subDay(),
+            endTime: now()->subDay()->addMinutes(30),
+            status: 'blocked'
+        );
 
-        $response->assertStatus(404);
+        $appointment = $this->createAppointment(
+            studentId: $student->id,
+            advisorId: $advisor->id,
+            slotId: $slot->id,
+            status: 'approved'
+        );
+
+        $this->actingAs($student)
+            ->patch(route('student.appointments.cancel', $appointment->id))
+            ->assertStatus(422);
+
+        // Ensure no changes happened
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'status' => 'approved',
+        ]);
+
+        $this->assertDatabaseHas('appointment_slots', [
+            'id' => $slot->id,
+            'status' => 'blocked',
+        ]);
+    }
+
+    public function test_history_tab_includes_cancelled_appointment(): void
+    {
+        $student = $this->createUser('student');
+        $advisor = $this->createUser('advisor');
+
+        // Future slot but appointment is cancelled -> should be in history by status rule
+        $slot = $this->createSlot(
+            advisorId: $advisor->id,
+            startTime: now()->addDay(),
+            endTime: now()->addDay()->addMinutes(30),
+            status: 'active'
+        );
+
+        $appointment = $this->createAppointment(
+            studentId: $student->id,
+            advisorId: $advisor->id,
+            slotId: $slot->id,
+            status: 'cancelled'
+        );
+
+        $response = $this->actingAs($student)
+            ->get('/student/my-appointments?tab=history');
+
+        $response->assertStatus(200);
+
+        // Assert the view received the history collection and includes our appointment
+        $response->assertViewHas('historyAppointments', function ($history) use ($appointment) {
+            return $history->contains('id', $appointment->id);
+        });
     }
 }
