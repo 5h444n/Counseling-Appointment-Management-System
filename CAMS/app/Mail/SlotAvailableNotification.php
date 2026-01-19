@@ -18,21 +18,10 @@ class SlotAvailableNotification extends Mailable
     /**
      * Create a new message instance.
      */
-    use Queueable, SerializesModels;
-    public $slot;
-    public $student;
-
-    public function __construct(AppointmentSlot $slot, User $student)
-    {
-        $this->slot = $slot;
-        $this->student = $student;
-    }
-
-    public function build()
-    {
-        return $this->subject('Slot Available! Book Immediately - CAMS UIU')
-                    ->view('emails.slot_available');
-    }
+    public function __construct(
+        public AppointmentSlot $slot,
+        public User $student
+    ) {}
 
     /**
      * Get the message envelope.
@@ -40,7 +29,7 @@ class SlotAvailableNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Slot Available Notification',
+            subject: 'Slot Available! Book Immediately - CAMS',
         );
     }
 
@@ -50,7 +39,7 @@ class SlotAvailableNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.slot_available',
         );
     }
 
