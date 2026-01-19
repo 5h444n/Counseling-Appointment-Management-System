@@ -40,15 +40,18 @@ class AutoCancelAppointmentsTest extends TestCase
             'status' => 'blocked',
         ]);
 
-        // Create an appointment that's 25 hours old (older than 24h threshold)
+        // Create an appointment and manually update its created_at to be 25 hours ago
         $appointment = Appointment::create([
             'student_id' => $student->id,
             'slot_id' => $slot->id,
             'purpose' => 'Test counseling session',
             'status' => 'pending',
             'token' => 'CSE-' . $student->id . '-A',
-            'created_at' => Carbon::now()->subHours(25),
         ]);
+        
+        // Manually update created_at timestamp in the database
+        $appointment->created_at = Carbon::now()->subHours(25);
+        $appointment->save();
 
         // Run the auto-cancel command
         Artisan::call('appointments:autocancel');
@@ -79,15 +82,18 @@ class AutoCancelAppointmentsTest extends TestCase
             'status' => 'blocked',
         ]);
 
-        // Create a recent appointment (only 2 hours old)
+        // Create a recent appointment
         $appointment = Appointment::create([
             'student_id' => $student->id,
             'slot_id' => $slot->id,
             'purpose' => 'Test counseling session',
             'status' => 'pending',
             'token' => 'CSE-' . $student->id . '-A',
-            'created_at' => Carbon::now()->subHours(2),
         ]);
+        
+        // Manually set created_at to 2 hours ago
+        $appointment->created_at = Carbon::now()->subHours(2);
+        $appointment->save();
 
         // Run the auto-cancel command
         Artisan::call('appointments:autocancel');
@@ -194,15 +200,18 @@ class AutoCancelAppointmentsTest extends TestCase
             'status' => 'blocked',
         ]);
 
-        // Create a completed appointment (old)
+        // Create a completed appointment
         $appointment = Appointment::create([
             'student_id' => $student->id,
             'slot_id' => $slot->id,
             'purpose' => 'Test counseling session',
             'status' => 'completed',
             'token' => 'CSE-' . $student->id . '-A',
-            'created_at' => Carbon::now()->subDays(2),
         ]);
+        
+        // Set created_at to 2 days ago
+        $appointment->created_at = Carbon::now()->subDays(2);
+        $appointment->save();
 
         // Run the auto-cancel command
         Artisan::call('appointments:autocancel');
@@ -236,17 +245,20 @@ class AutoCancelAppointmentsTest extends TestCase
             'status' => 'blocked',
         ]);
 
-        // Create old pending appointment (should be cancelled)
+        // Create old pending appointment
         $appointment1 = Appointment::create([
             'student_id' => $student->id,
             'slot_id' => $slot1->id,
             'purpose' => 'Test counseling session 1',
             'status' => 'pending',
             'token' => 'CSE-' . $student->id . '-A',
-            'created_at' => Carbon::now()->subHours(25),
         ]);
+        
+        // Manually set created_at to 25 hours ago
+        $appointment1->created_at = Carbon::now()->subHours(25);
+        $appointment1->save();
 
-        // Create old approved appointment (should be marked no-show)
+        // Create old approved appointment
         $appointment2 = Appointment::create([
             'student_id' => $student->id,
             'slot_id' => $slot2->id,
