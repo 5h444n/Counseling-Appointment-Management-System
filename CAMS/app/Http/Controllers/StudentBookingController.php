@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AppointmentSlot;
 use App\Models\Appointment;
+use App\Models\AppointmentDocument;
 use App\Models\Waitlist;
 use App\Models\Department; 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class StudentBookingController extends Controller
 {
@@ -75,10 +77,11 @@ class StudentBookingController extends Controller
         $request->validate([
             'slot_id' => 'required|exists:appointment_slots,id',
             'purpose' => 'required|string|min:10|max:500', // Note: Minimum 10 characters required!
+            'document' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,txt,jpg,jpeg,png,gif,bmp,svg|max:102400', // Max 100MB
         ]);
 
         try {
-            DB::transaction(function () use ($request) {
+            $appointment = DB::transaction(function () use ($request) {
                 // 2. Lock the slot to prevent double booking
                 $slot = AppointmentSlot::where('id', $request->slot_id)
                     ->lockForUpdate()
@@ -128,13 +131,33 @@ class StudentBookingController extends Controller
                     'token'      => $token,
                 ]);
 
-                // 7. Update Slot Status
+                // 7. Handle file upload if present
+                if ($request->hasFile('document')) {
+                    $file = $request->file('document');
+                    $originalName = $file->getClientOriginalName();
+                    
+                    // Store file in storage/app/public/appointment_documents
+                    $filePath = $file->store('appointment_documents', 'public');
+                    
+                    // Save document record
+                    AppointmentDocument::create([
+                        'appointment_id' => $appointment->id,
+                        'file_path' => $filePath,
+                        'original_name' => $originalName,
+                    ]);
+                    
+                    Log::info('Document uploaded', ['appointment_id' => $appointment->id, 'file' => $originalName]);
+                }
+
+                // 8. Update Slot Status
                 $slot->update(['status' => 'blocked']);
 
-                // 8. Remove from waitlist if this student was on it
+                // 9. Remove from waitlist if this student was on it
                 Waitlist::where('slot_id', $slot->id)->where('student_id', Auth::id())->delete();
 
                 Log::info('Appointment booked successfully', ['id' => $appointment->id]);
+                
+                return $appointment;
             });
 
             return redirect()->route('dashboard')->with('success', 'Appointment booked successfully! Wait for approval.');

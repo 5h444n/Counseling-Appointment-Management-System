@@ -99,7 +99,7 @@
                 <div class="bg-slate-900 px-4 py-3 sm:px-6">
                     <h3 class="text-base font-semibold leading-6 text-white">Confirm Appointment</h3>
                 </div>
-                <form action="{{ route('student.book.store') }}" method="POST" class="p-6">
+                <form action="{{ route('student.book.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                     @csrf
                     <input type="hidden" name="slot_id" id="modalSlotId">
 
@@ -113,6 +113,12 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
                         <textarea name="purpose" required rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Attachment (Optional)</label>
+                        <input type="file" name="document" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.svg" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                        <p class="text-xs text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG (Max: 100MB)</p>
                     </div>
 
                     <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">

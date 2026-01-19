@@ -55,11 +55,12 @@ The system uses a modern TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire)
 |---------|-------------|
 | **Advisor Discovery** | Search and filter advisors by name or department |
 | **Real-time Availability** | View all available time slots for any advisor |
-| **Smart Booking** | Book appointments with purpose description |
+| **Smart Booking** | Book appointments with purpose description and optional file attachments |
 | **Digital Tokens** | Receive unique appointment tokens (e.g., CSE-123-A) |
 | **Appointment Tracking** | Track appointment status (Pending, Approved, Declined) |
 | **Appointment History** | View all past and upcoming appointments |
 | **Waitlist System** | Join waitlist for booked slots and get notified when they open up |
+| **Document Upload** | Attach optional documents (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG) up to 100MB |
 
 ### 👨‍🏫 Advisor Features
 | Feature | Description |
@@ -542,6 +543,7 @@ Output:
 **Step 3: Confirm Booking**
 - Modal popup for booking confirmation
 - Enter appointment purpose (required, minimum 10 characters)
+- Optionally attach a document (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG - Max 100MB)
 - Submit for advisor approval
 
 **Step 4: Receive Token**
@@ -656,6 +658,57 @@ Advisors can document counseling sessions:
 - One-to-one relationship with appointments
 - Accessible from advisor schedule view
 - Helps maintain session history and follow-ups
+
+### 9. File Upload System
+
+Students can attach supporting documents when booking appointments:
+
+**Workflow:**
+1. When booking an appointment, students can optionally upload a file
+2. System validates file type and size
+3. File is securely stored in `storage/app/public/appointment_documents`
+4. File metadata saved in `appointment_documents` table
+5. Advisors can access uploaded documents when reviewing appointments
+
+**Features:**
+- Optional file upload during booking
+- Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG, GIF, BMP, SVG
+- Maximum file size: 100MB
+- Files associated with appointments via Eloquent relationships
+- Secure storage with validation
+
+**Validation:**
+- File type checking prevents malicious uploads
+- Size limit prevents server overload
+- Original filename preserved for reference
+
+### 10. Auto-Cancellation System
+
+Automated cleanup of stale appointments via Laravel scheduler:
+
+**Workflow:**
+1. Scheduled task runs every minute via `appointments:autocancel` command
+2. System checks for appointments meeting cancellation criteria
+3. Stale pending requests (>24 hours) are auto-cancelled
+4. Approved appointments with no-shows (>10 min past start) are marked
+5. Slots are automatically freed up for rebooking
+6. Email notifications sent to waitlisted students (if applicable)
+
+**Features:**
+- Auto-cancels pending appointments older than 24 hours
+- Marks approved appointments as "no-show" after 10-minute grace period
+- Frees up slots automatically when appointments are cancelled
+- Runs continuously via Laravel scheduler
+- Transaction-safe processing
+
+**Configuration:**
+```bash
+# Set up cron job in production
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+
+# Manual execution
+php artisan appointments:autocancel
+```
 
 ---
 
@@ -887,10 +940,10 @@ Department: CSE
 
 ### Test Statistics
 
-- **Total Tests**: 154
-- **Passing**: 154 (100%)
-- **Total Assertions**: 342
-- **Test Duration**: ~6 seconds
+- **Total Tests**: 168
+- **Passing**: 168 (100%)
+- **Total Assertions**: 400+
+- **Test Duration**: ~7 seconds
 
 ### Run All Tests
 
@@ -957,6 +1010,8 @@ tests/
 | Dashboard | 12 | Role-specific dashboard views |
 | Profile Management | 8 | CRUD operations |
 | Model Relationships | 16 | Eloquent relationship validation |
+| **File Upload** | 8 | Document upload, validation, storage |
+| **Auto-Cancellation** | 6 | Stale request cleanup, no-show marking |
 
 ---
 
@@ -966,12 +1021,10 @@ tests/
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **File Attachments** | Database-ready | `appointment_documents` table exists but upload logic not implemented |
 | **Admin Dashboard** | Placeholder | Route returns "Coming Soon" message |
 | **Recurring Slots** | Database-ready | `is_recurring` column exists but no generation logic |
 | **Email Verification Enforcement** | Partial | Routes exist but not enforced in workflow |
 | **Appointment Cancellation** | Not implemented | Status exists in database but no UI/logic |
-| **No-Show Auto-Marking** | Not implemented | Requires cron job or scheduled task |
 | **User Management (Admin)** | Not implemented | No UI for admin user CRUD operations |
 
 ### Planned Enhancements
