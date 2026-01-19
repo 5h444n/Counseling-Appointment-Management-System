@@ -22,6 +22,12 @@ class NotifyWaitlist
 
     /**
      * Handle the event.
+     *
+     * Processes the SlotFreedUp event by notifying the first student
+     * in the waitlist queue via email and removing them from the list.
+     *
+     * @param SlotFreedUp $event The event containing the freed slot
+     * @return void
      */
     public function handle(SlotFreedUp $event): void
     {

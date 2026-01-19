@@ -11,6 +11,11 @@ use Carbon\Carbon;
  */
 class AppointmentSlotFactory extends Factory
 {
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $startTime = Carbon::tomorrow()->addHours(fake()->numberBetween(8, 16));

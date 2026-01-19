@@ -707,8 +707,6 @@ Advisors can document counseling sessions:
 | GET | `/advisor/schedule` | View all appointments (upcoming & past) |
 | GET | `/advisor/appointments/{id}/note` | Meeting notes form |
 | POST | `/advisor/appointments/{id}/note` | Save meeting notes |
-| DELETE | `/advisor/slots/{slot}` | Delete a slot |
-| PATCH | `/advisor/appointments/{id}` | Approve/Decline |
 
 ### Admin Routes (Coming Soon)
 
@@ -848,12 +846,6 @@ CREATE TABLE minutes (
       │           ┌─────────┐ ┌──────────────────┐
       └───────────│ Minute  │ │AppointmentDocument│
                   └─────────┘ └──────────────────┘
-```
-      │                       │1:N
-      │                       ▼
-      │               ┌──────────────────┐
-      └───────────────│AppointmentDocument│
-                      └──────────────────┘
 ```
 
 ---
