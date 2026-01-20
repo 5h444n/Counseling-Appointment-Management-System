@@ -108,11 +108,6 @@ All features below have been verified to exist in the codebase with proper imple
 - `database/migrations/2025_11_28_190821_create_appointment_documents_table.php` - Database table
 - File upload validation in StudentBookingController
 
-**Files Verified:**
-- `app/Models/AppointmentDocument.php` - Model for document storage
-- `database/migrations/2025_11_28_190821_create_appointment_documents_table.php` - Database table
-- File upload validation in StudentBookingController
-
 **Features:**
 - Students can attach documents when booking (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, images)
 - Maximum file size: 100MB
