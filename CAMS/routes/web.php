@@ -98,6 +98,9 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
     Route::get('/advisor/appointments/{id}/note', [AdvisorMinuteController::class, 'create'])->name('advisor.minutes.create');
     Route::post('/advisor/appointments/{id}/note', [AdvisorMinuteController::class, 'store'])->name('advisor.minutes.store');
 
+    // --- Document Download (Secure Access) ---
+    Route::get('/advisor/documents/{documentId}/download', [AdvisorAppointmentController::class, 'downloadDocument'])->name('advisor.documents.download');
+
 });
 
 

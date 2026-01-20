@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\AppointmentSlot;
+use App\Models\AppointmentDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Events\SlotFreedUp;
 
 class AdvisorAppointmentController extends Controller
@@ -78,5 +80,27 @@ class AdvisorAppointmentController extends Controller
         ]);
 
         return back()->with('success', 'Appointment Confirmed!');
+    }
+
+    /**
+     * Download/View an appointment document securely.
+     */
+    public function downloadDocument($documentId)
+    {
+        $document = AppointmentDocument::findOrFail($documentId);
+        $appointment = $document->appointment;
+
+        // Security check: ensure this document's appointment belongs to the logged-in advisor
+        if ($appointment->slot->advisor_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to this document.');
+        }
+
+        // Check if file exists
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'Document not found.');
+        }
+
+        // Return the file for download/viewing
+        return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 }
