@@ -69,6 +69,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/calendar/events', 'store')->name('calendar.store');
         Route::delete('/calendar/events/{id}', 'destroy')->name('calendar.destroy');
     });
+
+    // Feedback
+    Route::post('/feedback', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedback.store');
+
+    // Resources (Download)
+    Route::get('/resources/{resource}/download', [\App\Http\Controllers\ResourceController::class, 'download'])->name('resources.download');
 });
 
 /*
@@ -97,6 +103,9 @@ Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
 
     // Cancel an upcoming appointment
     Route::post('/student/appointments/{id}/cancel', [StudentBookingController::class, 'cancel'])->name('student.appointments.cancel');
+
+    // Resources (Student View)
+    Route::get('/student/resources', [\App\Http\Controllers\ResourceController::class, 'index'])->name('student.resources.index');
 });
 
 
@@ -127,6 +136,11 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 
     // --- Document Download (Secure Access) ---
     Route::get('/advisor/documents/{documentId}/download', [AdvisorAppointmentController::class, 'downloadDocument'])->name('advisor.documents.download');
+
+    // --- Resources (Manage) ---
+    Route::get('/advisor/resources', [\App\Http\Controllers\ResourceController::class, 'index'])->name('advisor.resources.index');
+    Route::post('/advisor/resources', [\App\Http\Controllers\ResourceController::class, 'store'])->name('advisor.resources.store');
+    Route::delete('/advisor/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'destroy'])->name('advisor.resources.destroy');
 
 });
 
@@ -163,6 +177,11 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     // Notice Management
     Route::resource('admin/notices', \App\Http\Controllers\AdminNoticeController::class, ['as' => 'admin']);
+
+    // Resource Library Management
+    Route::get('/admin/resources', [\App\Http\Controllers\ResourceController::class, 'index'])->name('admin.resources.index');
+    Route::post('/admin/resources', [\App\Http\Controllers\ResourceController::class, 'store'])->name('admin.resources.store');
+    Route::delete('/admin/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'destroy'])->name('admin.resources.destroy');
 
 });
 

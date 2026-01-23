@@ -27,7 +27,13 @@ class AdvisorAppointmentController extends Controller
             ->with(['student', 'slot', 'documents'])
             ->get();
 
-        return view('advisor.dashboard', compact('appointments'));
+        $recentFeedback = \App\Models\Feedback::where('advisor_id', Auth::id())
+            ->with('student')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        return view('advisor.dashboard', compact('appointments', 'recentFeedback'));
     }
 
     /**
