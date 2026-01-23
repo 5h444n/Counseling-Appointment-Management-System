@@ -58,8 +58,8 @@
             <div class="ml-4 flex-shrink-0 flex">
                 <button @click="show = false"
                         :class="{
-                            'text-green-400 hover:text-green-600': type === 'success',
-                            'text-red-400 hover:text-red-600': type === 'error'
+                            'text-green-400 hover:text-green-600 focus:ring-green-500': type === 'success',
+                            'text-red-400 hover:text-red-600 focus:ring-red-500': type === 'error'
                         }"
                         class="inline-flex rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2">
                     <span class="sr-only">Close</span>
