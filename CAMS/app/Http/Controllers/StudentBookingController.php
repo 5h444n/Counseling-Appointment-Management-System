@@ -221,7 +221,7 @@ class StudentBookingController extends Controller
 
         // Build base query once and reuse for both branches
         $baseQuery = Appointment::where('student_id', Auth::id())
-            ->with(['slot.advisor.department']);
+            ->with(['slot.advisor.department', 'feedback']);
 
         if ($tab === 'upcoming') {
             // Upcoming: future appointments that are still pending or approved

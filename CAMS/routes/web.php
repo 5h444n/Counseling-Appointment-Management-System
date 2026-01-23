@@ -69,6 +69,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/calendar/events', 'store')->name('calendar.store');
         Route::delete('/calendar/events/{id}', 'destroy')->name('calendar.destroy');
     });
+
+    // Feedback
+    Route::post('/feedback', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedback.store');
 });
 
 /*
