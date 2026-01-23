@@ -301,11 +301,6 @@ class StudentBookingController extends Controller
                     throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
                 }
 
-                // Prevent cancelling past appointments
-                if ($slot->start_time <= now()) {
-                    throw new \RuntimeException('Cannot cancel an appointment that has already started.');
-                }
-
                 // 1. Update appointment status to cancelled
                 $appointment->update(['status' => 'cancelled']);
 

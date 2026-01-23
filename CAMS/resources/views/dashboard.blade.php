@@ -27,7 +27,15 @@
         @if(isset($notices) && $notices->isNotEmpty())
         <div class="mt-6 space-y-3">
             @foreach($notices as $notice)
-                <div x-data="{ show: true }" x-show="show" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r shadow-sm relative">
+                <div x-data="{ 
+                        show: localStorage.getItem('dismissed_notice_{{ $notice->id }}') !== 'true',
+                        dismiss() {
+                            this.show = false;
+                            localStorage.setItem('dismissed_notice_{{ $notice->id }}', 'true');
+                        }
+                    }" 
+                    x-show="show" 
+                    class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r shadow-sm relative">
                     <div class="flex items-start justify-between">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -45,7 +53,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button @click="show = false" class="text-yellow-400 hover:text-yellow-600 focus:outline-none">
+                        <button @click="dismiss()" class="text-yellow-400 hover:text-yellow-600 focus:outline-none">
                             <span class="sr-only">Dismiss</span>
                             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                         </button>

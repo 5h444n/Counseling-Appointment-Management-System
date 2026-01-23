@@ -75,6 +75,11 @@ Route::middleware('auth')->group(function () {
 
     // Resources (Download)
     Route::get('/resources/{resource}/download', [\App\Http\Controllers\ResourceController::class, 'download'])->name('resources.download');
+
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 });
 
 /*
