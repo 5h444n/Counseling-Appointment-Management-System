@@ -207,6 +207,15 @@ class StudentBookingController extends Controller
             return back()->with('error', 'You are already on the waitlist for this slot.');
         }
 
+        // Check if the student is the one who actually booked it (should not waitlist yourself)
+        $isBooker = Appointment::where('slot_id', $slotId)
+            ->where('student_id', $user->id)
+            ->exists();
+
+        if ($isBooker) {
+            return back()->with('error', 'You have already booked this slot.');
+        }
+
         // Add to waitlist
         Waitlist::create([
             'slot_id' => $slotId,
