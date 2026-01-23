@@ -42,7 +42,12 @@ class ResourceController extends Controller
             ->whereHas('resources') // Only advisors with uploads
             ->get();
 
-        $view = Auth::user()->role === 'student' ? 'student.resources.index' : 'advisor.resources.index';
+        $view = 'student.resources.index';
+        if (Auth::user()->role === 'advisor') {
+            $view = 'advisor.resources.index';
+        } elseif (Auth::user()->role === 'admin') {
+            $view = 'advisor.resources.index'; // Share advisor view for Admin
+        }
         
         return view($view, compact('resources', 'advisors'));
     }
