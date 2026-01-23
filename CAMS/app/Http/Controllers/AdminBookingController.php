@@ -27,7 +27,7 @@ class AdminBookingController extends Controller
         $request->validate(['advisor_id' => 'required|exists:users,id']);
 
         $slots = AppointmentSlot::where('advisor_id', $request->advisor_id)
-            ->where('status', 'open')
+            ->where('status', 'active') // Fixed: status is 'active', not 'open'
             ->where('start_time', '>', now())
             ->orderBy('start_time')
             ->get()
@@ -55,21 +55,31 @@ class AdminBookingController extends Controller
 
         $slot = AppointmentSlot::findOrFail($request->slot_id);
 
-        if ($slot->status !== 'open') {
+        if ($slot->status !== 'active') { // Fixed: check 'active'
             return back()->with('error', 'This slot is no longer available.');
         }
 
+        // Generate Standard Token
+        $token = 'GEN-' . $request->student_id . '-' . strtoupper(Str::random(4));
+
         // Create Appointment
-        Appointment::create([
+        $appointment = Appointment::create([
             'student_id' => $request->student_id,
             'slot_id' => $slot->id,
-            'token' => strtoupper(Str::random(8)),
+            'token' => $token,
             'purpose' => $request->purpose,
-            'status' => 'approved', // Admin bookings are auto-approved usually? Or pending? Let's say approved.
+            'status' => 'approved', 
         ]);
 
         // Update Slot Status
         $slot->update(['status' => 'booked']);
+
+        // Log Activity
+        \App\Services\ActivityLogger::logBooking(
+            'Admin', // Actor
+            $slot->advisor->name, // Advisor
+            $token
+        );
 
         return redirect()->route('admin.dashboard')
             ->with('success', 'Appointment booked successfully on behalf of student.');
@@ -88,7 +98,7 @@ class AdminBookingController extends Controller
 
         // Free up the slot
         if ($slot) {
-            $slot->update(['status' => 'open']);
+            $slot->update(['status' => 'active']); // Fixed: reset to 'active'
         }
 
         return back()->with('success', 'Appointment deleted and slot freed successfully.');
