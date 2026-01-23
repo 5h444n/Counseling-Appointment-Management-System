@@ -241,12 +241,23 @@ class StudentBookingController extends Controller
     {
         try {
             DB::transaction(function () use ($id) {
+                // Lock the appointment row for update to prevent race conditions
+                // Use lockForUpdate to prevent concurrent cancellations
                 // Lock the appointment row to prevent concurrent cancellations
                 $appointment = Appointment::where('id', $id)
                     ->where('student_id', Auth::id())
                     ->lockForUpdate()
                     ->firstOrFail();
 
+                // Re-check status inside transaction after acquiring lock
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('This appointment cannot be cancelled.');
+                }
+
+                // Lock and load the slot to check time
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
                 // Lock the slot row as well to prevent race conditions
                 $slot = AppointmentSlot::where('id', $appointment->slot_id)
                     ->lockForUpdate()
@@ -266,6 +277,7 @@ class StudentBookingController extends Controller
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
+                $slot->update(['status' => 'active']);
                 $slot->status = 'active';
                 $slot->save();
 
@@ -281,6 +293,10 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Appointment not found or doesn't belong to this student - return 404
+            abort(404);
+        } catch (\RuntimeException $e) {
+            // Business logic validation failures
             // Re-throw to let Laravel's exception handler return 404
             throw $e;
         } catch (\RuntimeException $e) {
