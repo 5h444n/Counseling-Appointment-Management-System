@@ -55,7 +55,7 @@ class StudentBookingController extends Controller
 
         // Fetch slots that are Active (Open) OR Blocked (to show Waitlist option)
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'blocked']) // Include blocked slots for waitlist feature
             ->where('start_time', '>', now())
             ->orderBy('start_time', 'asc')
             ->get();
