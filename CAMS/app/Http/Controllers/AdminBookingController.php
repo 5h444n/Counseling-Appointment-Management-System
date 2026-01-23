@@ -72,7 +72,7 @@ class AdminBookingController extends Controller
         ]);
 
         // Update Slot Status
-        $slot->update(['status' => 'booked']);
+        $slot->update(['status' => 'blocked']);
 
         // Log Activity
         \App\Services\ActivityLogger::logBooking(
