@@ -112,7 +112,7 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 // 4. ADMIN AREA
 // Protected by 'auth' and 'admin' middleware
 // =========================================================================
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
