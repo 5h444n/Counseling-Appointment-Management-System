@@ -263,8 +263,7 @@ class StudentBookingController extends Controller
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
-                $slot->status = 'active';
-                $slot->save();
+                $slot->update(['status' => 'active']);
 
                 // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
                 event(new SlotFreedUp($slot));
