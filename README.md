@@ -4,6 +4,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white" alt="Alpine.js">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Tests-194%20%2F%20201%20Passing-yellow?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
 
@@ -11,12 +12,16 @@
 
 **CAMS** is a comprehensive web-based appointment scheduling system designed specifically for universities and educational institutions. It streamlines the counseling and advisory appointment process between students and faculty advisors, enabling efficient booking, management, and tracking of counseling sessions.
 
+> ⚠️ **Important**: This system has 28 identified bugs (4 critical, 7 high priority). See [BUGS.md](BUGS.md) for complete details before deployment.
+
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+- [Project Status](#-project-status)
 - [Key Features](#-key-features)
+- [Known Issues](#-known-issues)
 - [Tech Stack](#-tech-stack)
 - [System Architecture](#-system-architecture)
 - [Prerequisites](#-prerequisites)
@@ -30,9 +35,56 @@
 - [Database Schema](#-database-schema)
 - [Default Credentials](#-default-credentials)
 - [Testing](#-testing)
+- [Bug Reports](#-bug-reports)
 - [Deployment](#-deployment)
 - [Contributing](#-contributing)
 - [License](#-license)
+
+---
+
+## 📊 Project Status
+
+**Current Version:** 1.0.0-beta  
+**Status:** ⚠️ Beta - Not Production Ready  
+**Last Updated:** January 23, 2026
+
+### Implementation Status
+- ✅ **Student Features:** 90% Complete (cancellation feature pending)
+- ✅ **Advisor Features:** 95% Complete (all core features implemented)
+- ⚠️ **Admin Features:** 75% Complete (booking feature broken, see BUG-001)
+- ⚠️ **Testing:** 96.5% Pass Rate (7 failing tests)
+- 🔴 **Critical Bugs:** 4 identified (admin booking, error handling)
+
+### Documentation
+- ✅ [BUGS.md](BUGS.md) - Comprehensive bug report (28 bugs documented)
+- ✅ [PROJECT_STATUS_REPORT.md](PROJECT_STATUS_REPORT.md) - Detailed project status
+- ✅ [CAMS/TEST_REPORT.md](CAMS/TEST_REPORT.md) - Full test report
+- ✅ [CAMS/QA_SUMMARY.md](CAMS/QA_SUMMARY.md) - QA summary
+
+---
+
+## ⚠️ Known Issues
+
+**Before using this system, please review:**
+
+### Critical Bugs (Must Fix Before Production)
+1. **Admin booking feature completely broken** - Uses wrong slot status values
+2. **Student cancellation returns 404** - Incorrect exception handling
+3. **Test failures due to session flash key mismatch** - Breaks 3 tests
+4. **Admin dashboard redirect issue** - Unexpected behavior
+
+### Security Issues
+- Missing authorization checks in advisor minute controller
+- Missing CSRF token in admin booking AJAX
+- File upload path traversal risk
+- Missing logging for critical actions
+
+### Performance Issues
+- N+1 query loading all appointments in admin dashboard
+- Missing pagination in admin user management
+- Duplicate slot locking in cancellation
+
+**Full Details:** See [BUGS.md](BUGS.md) for all 28 bugs with severity ratings and fix recommendations.
 
 ---
 
@@ -940,10 +992,24 @@ Department: CSE
 
 ### Test Statistics
 
-- **Total Tests**: 168
-- **Passing**: 168 (100%)
-- **Total Assertions**: 400+
-- **Test Duration**: ~7 seconds
+- **Total Tests**: 201
+- **Passing**: 194 (96.5%)
+- **Failing**: 7 (3.5%)
+- **Total Assertions**: 539+
+- **Test Duration**: ~8.7 seconds
+
+### Current Test Status
+
+⚠️ **Note**: 7 tests are currently failing due to identified bugs. See [BUGS.md](BUGS.md) for details.
+
+**Failed Tests:**
+1. `AdvisorSlotTest::returns error when time range too short for slots` - Session key mismatch
+2. `DashboardTest::admins can access dashboard` - Redirect behavior
+3. `SlotOverlapDetectionTest::overlapping slots are not created` - Session key mismatch
+4. `SlotOverlapDetectionTest::creating slots for today works` - Time validation issue
+5. `StudentAppointmentCancellationTest::student cannot cancel past appointment` - Exception handling
+6. `StudentAppointmentCancellationTest::student cannot cancel declined appointment` - Exception handling
+7. `StudentBookingControllerTest::only active future slots are displayed` - Slot filtering logic
 
 ### Run All Tests
 
@@ -1015,17 +1081,74 @@ tests/
 
 ---
 
+## 🐛 Bug Reports
+
+### Comprehensive Bug Analysis
+
+A thorough analysis of the codebase has identified **28 bugs** across different severity levels. All bugs are documented in [BUGS.md](BUGS.md) with:
+- Root cause analysis
+- File locations and line numbers
+- Code examples (current vs. fixed)
+- Severity ratings
+- Fix recommendations
+- Affected tests
+
+### Bug Summary
+
+| Severity | Count | Description |
+|----------|-------|-------------|
+| 🔴 **CRITICAL** | 4 | Broken functionality requiring immediate fix |
+| 🟠 **HIGH** | 7 | Security vulnerabilities and performance issues |
+| 🟡 **MEDIUM** | 13 | Code quality and data integrity issues |
+| 🟢 **LOW** | 4 | Documentation and maintainability improvements |
+
+### Critical Bugs Requiring Immediate Attention
+
+1. **BUG-001: AdminBookingController Broken**
+   - **Impact:** Admin cannot create bookings
+   - **Cause:** Wrong slot status values used ('open' vs 'active')
+   - **Fix Time:** 15 minutes
+
+2. **BUG-002: Error Handling Returns 404 Instead of Redirect**
+   - **Impact:** Student cancellation shows 404 error page
+   - **Cause:** Duplicate exception handlers with abort(404)
+   - **Fix Time:** 10 minutes
+
+3. **BUG-003: Test Failures Due to Session Key Mismatch**
+   - **Impact:** 3 tests failing, users see wrong message type
+   - **Cause:** Returns 'warning' instead of 'error'
+   - **Fix Time:** 5 minutes
+
+4. **BUG-004: Admin Dashboard Redirect Issue**
+   - **Impact:** Tests fail, unexpected redirect behavior
+   - **Cause:** Dashboard redirects admins to admin.dashboard
+   - **Fix Time:** 5 minutes (test fix)
+
+### Report a New Bug
+
+Found a bug not listed in BUGS.md? Please:
+1. Check if it's already documented in [BUGS.md](BUGS.md)
+2. Create a GitHub issue with:
+   - Clear description
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Screenshots if applicable
+3. Label it with appropriate severity
+
+---
+
 ## ⚠️ Known Limitations
 
 ### Features Not Yet Implemented
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Admin Dashboard** | Placeholder | Route returns "Coming Soon" message |
-| **Recurring Slots** | Database-ready | `is_recurring` column exists but no generation logic |
+| **Admin Booking** | ⚠️ Broken | Uses wrong status values (see BUG-001) |
+| **Student Cancellation** | ⚠️ Broken | Returns 404 instead of redirect (see BUG-002) |
+| **Recurring Slots** | Database-ready | `is_recurring` column exists but generation logic incomplete |
 | **Email Verification Enforcement** | Partial | Routes exist but not enforced in workflow |
-| **Appointment Cancellation** | Not implemented | Status exists in database but no UI/logic |
-| **User Management (Admin)** | Not implemented | No UI for admin user CRUD operations |
+| **User Management (Admin)** | 75% Complete | Faculty CRUD works, needs pagination (see BUG-018) |
+| **System Analytics** | Partial | Dashboard exists but has N+1 query (see BUG-006) |
 
 ### Planned Enhancements
 
@@ -1042,6 +1165,17 @@ See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendatio
 ## 🌐 Deployment
 
 ### Production Checklist
+
+⚠️ **IMPORTANT: Do NOT deploy to production before fixing critical bugs!**
+
+**Pre-Deployment Requirements:**
+1. ✅ Fix all 4 CRITICAL bugs (see BUGS.md)
+2. ✅ Fix all 7 HIGH severity bugs (security & performance)
+3. ✅ All tests passing (currently 7 failing)
+4. ✅ Security audit completed
+5. ✅ Performance testing with large datasets
+
+**After Bug Fixes:**
 
 1. **Environment Configuration**
    ```env
@@ -1077,6 +1211,12 @@ See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendatio
    - Point document root to `CAMS/public`
    - Configure HTTPS
    - Set up proper rewrite rules
+
+7. **Enable Scheduled Commands**
+   ```bash
+   # Add to crontab for auto-cancellation
+   * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+   ```
 
 ### Nginx Configuration Example
 
