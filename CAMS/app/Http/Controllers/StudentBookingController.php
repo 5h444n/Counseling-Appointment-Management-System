@@ -235,27 +235,33 @@ class StudentBookingController extends Controller
      */
     public function cancel(Request $request, $id)
     {
-        $appointment = Appointment::where('id', $id)
-            ->where('student_id', Auth::id())
-            ->firstOrFail();
-
-        // Only allow cancellation for pending or approved appointments
-        if (!in_array($appointment->status, ['pending', 'approved'])) {
-            return back()->with('error', 'This appointment cannot be cancelled.');
-        }
-
-        // Prevent cancelling past appointments
-        if ($appointment->slot->start_time <= now()) {
-            return back()->with('error', 'Cannot cancel an appointment that has already started.');
-        }
-
         try {
-            DB::transaction(function () use ($appointment) {
+            DB::transaction(function () use ($id) {
+                // Lock the appointment row to prevent concurrent cancellations
+                $appointment = Appointment::where('id', $id)
+                    ->where('student_id', Auth::id())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Lock the slot row as well to prevent race conditions
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Only allow cancellation for pending or approved appointments
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('This appointment cannot be cancelled.');
+                }
+
+                // Prevent cancelling past appointments
+                if ($slot->start_time <= now()) {
+                    throw new \RuntimeException('Cannot cancel an appointment that has already started.');
+                }
+
                 // 1. Update appointment status to cancelled
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
-                $slot = $appointment->slot;
                 $slot->status = 'active';
                 $slot->save();
 
@@ -270,6 +276,11 @@ class StudentBookingController extends Controller
             });
 
             return back()->with('success', 'Appointment cancelled successfully.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Re-throw model not found exceptions to maintain 404 behavior
+            throw $e;
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to cancel appointment. Please try again.');
