@@ -242,8 +242,6 @@ class StudentBookingController extends Controller
         try {
             DB::transaction(function () use ($id) {
                 // Lock the appointment row for update to prevent race conditions
-                // Use lockForUpdate to prevent concurrent cancellations
-                // Lock the appointment row to prevent concurrent cancellations
                 $appointment = Appointment::where('id', $id)
                     ->where('student_id', Auth::id())
                     ->lockForUpdate()
@@ -258,15 +256,6 @@ class StudentBookingController extends Controller
                 $slot = AppointmentSlot::where('id', $appointment->slot_id)
                     ->lockForUpdate()
                     ->firstOrFail();
-                // Lock the slot row as well to prevent race conditions
-                $slot = AppointmentSlot::where('id', $appointment->slot_id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                // Only allow cancellation for pending or approved appointments
-                if (!in_array($appointment->status, ['pending', 'approved'])) {
-                    throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
-                }
 
                 // Prevent cancelling past appointments
                 if ($slot->start_time <= now()) {
@@ -278,10 +267,8 @@ class StudentBookingController extends Controller
 
                 // 2. Free up the slot
                 $slot->update(['status' => 'active']);
-                $slot->status = 'active';
-                $slot->save();
 
-                // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
+                // 3. Fire event to notify waitlist
                 event(new SlotFreedUp($slot));
 
                 Log::info("Student cancelled appointment", [
@@ -293,13 +280,10 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Appointment not found or doesn't belong to this student - return 404
+            // Appointment not found or doesn't belong to this student
             abort(404);
         } catch (\RuntimeException $e) {
             // Business logic validation failures
-            // Re-throw to let Laravel's exception handler return 404
-            throw $e;
-        } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
