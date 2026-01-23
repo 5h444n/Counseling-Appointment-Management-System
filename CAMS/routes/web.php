@@ -7,6 +7,7 @@ use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
 use App\Http\Controllers\AdvisorMinuteController;
+use App\Http\Controllers\AdminDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,9 +114,8 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 // =========================================================================
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    Route::get('/admin/dashboard', function () {
-        return "Admin Dashboard (Coming Soon)";
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
 
 });
 
