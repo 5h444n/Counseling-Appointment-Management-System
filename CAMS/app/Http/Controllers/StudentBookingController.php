@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Events\SlotFreedUp;
 
 class StudentBookingController extends Controller
 {
@@ -200,13 +201,78 @@ class StudentBookingController extends Controller
         return back()->with('success', 'You have joined the waitlist. We will notify you if it opens up.');
     }
 
-    public function myAppointments()
+    public function myAppointments(Request $request)
     {
-        $appointments = Appointment::where('student_id', Auth::id())
-            ->with(['slot.advisor.department'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $now = now();
+        $tab = $request->get('tab', 'upcoming');
 
-        return view('student.appointments.index', compact('appointments'));
+        $query = Appointment::where('student_id', Auth::id())
+            ->with(['slot.advisor.department']);
+
+        if ($tab === 'upcoming') {
+            // Upcoming: future appointments that are still pending or approved
+            $appointments = $query->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
+                ->whereIn('status', ['pending', 'approved'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // Past: appointments where slot time has passed OR status is completed/declined/cancelled/no_show
+            $appointments = Appointment::where('student_id', Auth::id())
+                ->with(['slot.advisor.department'])
+                ->where(function($q) use ($now) {
+                    $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
+                      ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('student.appointments.index', compact('appointments', 'tab'));
+    }
+
+    /**
+     * Cancel an upcoming appointment.
+     */
+    public function cancel(Request $request, $id)
+    {
+        $appointment = Appointment::where('id', $id)
+            ->where('student_id', Auth::id())
+            ->firstOrFail();
+
+        // Only allow cancellation for pending or approved appointments
+        if (!in_array($appointment->status, ['pending', 'approved'])) {
+            return back()->with('error', 'This appointment cannot be cancelled.');
+        }
+
+        // Prevent cancelling past appointments
+        if ($appointment->slot->start_time <= now()) {
+            return back()->with('error', 'Cannot cancel an appointment that has already started.');
+        }
+
+        try {
+            DB::transaction(function () use ($appointment) {
+                // 1. Update appointment status to cancelled
+                $appointment->update(['status' => 'cancelled']);
+
+                // 2. Free up the slot
+                $slot = $appointment->slot;
+                $slot->status = 'active';
+                $slot->save();
+
+                // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
+                event(new SlotFreedUp($slot));
+
+                Log::info("Student cancelled appointment", [
+                    'appointment_id' => $appointment->id,
+                    'student_id' => Auth::id(),
+                    'slot_id' => $slot->id
+                ]);
+            });
+
+            return back()->with('success', 'Appointment cancelled successfully.');
+        } catch (\Exception $e) {
+            Log::error('Cancel Failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to cancel appointment. Please try again.');
+        }
     }
 }
