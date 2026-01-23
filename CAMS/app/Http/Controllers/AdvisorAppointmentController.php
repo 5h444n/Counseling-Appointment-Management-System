@@ -84,6 +84,13 @@ class AdvisorAppointmentController extends Controller
                 Log::error("Event Error: " . $e->getMessage());
             }
 
+            // Notify Student
+            try {
+                $appointment->student->notify(new \App\Notifications\AppointmentStatusChanged($appointment, 'declined'));
+            } catch (\Exception $e) {
+                Log::error('Notification Failed: ' . $e->getMessage());
+            }
+
             return back()->with('success', 'Request Declined.');
         }
 
@@ -94,6 +101,13 @@ class AdvisorAppointmentController extends Controller
             'advisor_id' => Auth::id(),
             'appointment_id' => $appointment->id
         ]);
+
+        // Notify Student
+        try {
+            $appointment->student->notify(new \App\Notifications\AppointmentStatusChanged($appointment, 'approved'));
+        } catch (\Exception $e) {
+            Log::error('Notification Failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Appointment Confirmed!');
     }
