@@ -206,20 +206,24 @@ class StudentBookingController extends Controller
         $now = now();
         $tab = $request->get('tab', 'upcoming');
 
-        $query = Appointment::where('student_id', Auth::id())
+        // Validate tab parameter to expected values
+        if (!in_array($tab, ['upcoming', 'past'])) {
+            $tab = 'upcoming';
+        }
+
+        // Build base query once and reuse for both branches
+        $baseQuery = Appointment::where('student_id', Auth::id())
             ->with(['slot.advisor.department']);
 
         if ($tab === 'upcoming') {
             // Upcoming: future appointments that are still pending or approved
-            $appointments = $query->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
+            $appointments = (clone $baseQuery)->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
                 ->whereIn('status', ['pending', 'approved'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
             // Past: appointments where slot time has passed OR status is completed/declined/cancelled/no_show
-            $appointments = Appointment::where('student_id', Auth::id())
-                ->with(['slot.advisor.department'])
-                ->where(function($q) use ($now) {
+            $appointments = (clone $baseQuery)->where(function($q) use ($now) {
                     $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
                       ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
                 })
