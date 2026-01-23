@@ -7,6 +7,7 @@ use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
 use App\Http\Controllers\AdvisorMinuteController;
+use App\Http\Controllers\AdminActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,8 +112,11 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
-        return "Admin Dashboard (Coming Soon)";
+        return redirect()->route('admin.activity-logs');
     })->name('admin.dashboard');
+
+    // Activity Logs
+    Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');
 
 });
 
