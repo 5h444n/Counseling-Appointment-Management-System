@@ -32,7 +32,12 @@ Route::get('/', function () {
 });
 
 // Main Dashboard: The landing page after login (Accessible by all roles)
+// Main Dashboard: The landing page after login (Accessible by all roles)
 Route::get('/dashboard', function () {
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+    
     $nextAppointment = null;
     if (Auth::check()) {
         $nextAppointment = \App\Models\Appointment::where('student_id', Auth::id())
@@ -43,11 +48,19 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('nextAppointment'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// User Profile: Settings for Password/Name updates
+// User Profile & Calendar
 Route::middleware('auth')->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Calendar
+    Route::controller(\App\Http\Controllers\CalendarController::class)->group(function () {
+        Route::get('/calendar/events', 'fetchEvents')->name('calendar.events');
+        Route::post('/calendar/events', 'store')->name('calendar.store');
+        Route::delete('/calendar/events/{id}', 'destroy')->name('calendar.destroy');
+    });
 });
 
 /*
@@ -118,19 +131,7 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
-    /*
-     * Admin Dashboard:
-     * For now, the admin landing page redirects directly to the Activity Logs,
-     * since log monitoring is the primary admin task in this system.
-     * If a more traditional dashboard (summary stats, navigation cards, etc.)
-     * is introduced in the future, this route should be updated to render
-     * that dedicated dashboard view instead of redirecting.
-     */
-    Route::get('/admin/dashboard', function () {
-        return redirect()->route('admin.activity-logs');
-    })->name('admin.dashboard');
-    // Admin Dashboard (Faculty List)
-    Route::get('/admin/dashboard', [AdminFacultyController::class, 'index'])->name('admin.dashboard');
+
 
     // Faculty CRUD
     Route::get('/admin/faculty/create', [AdminFacultyController::class, 'create'])->name('admin.faculty.create');
