@@ -43,7 +43,12 @@
                                         </div>
                                     </div>
                                 @else
-                                    <span class="text-gray-400 text-sm">System / Deleted User</span>
+                                    <span
+                                        class="text-gray-400 text-sm"
+                                        title="This log entry has no associated user because the account was deleted or the action was performed by the system."
+                                    >
+                                        System / Deleted User
+                                    </span>
                                 @endif
                             </td>
 
