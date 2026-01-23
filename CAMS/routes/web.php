@@ -111,6 +111,14 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 // =========================================================================
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    /*
+     * Admin Dashboard:
+     * For now, the admin landing page redirects directly to the Activity Logs,
+     * since log monitoring is the primary admin task in this system.
+     * If a more traditional dashboard (summary stats, navigation cards, etc.)
+     * is introduced in the future, this route should be updated to render
+     * that dedicated dashboard view instead of redirecting.
+     */
     Route::get('/admin/dashboard', function () {
         return redirect()->route('admin.activity-logs');
     })->name('admin.dashboard');
