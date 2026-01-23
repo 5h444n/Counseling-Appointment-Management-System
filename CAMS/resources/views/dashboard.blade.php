@@ -23,6 +23,31 @@
             Welcome back, <span class="text-orange-600">{{ Auth::user()->name }}</span>!
         </h1>
         <p class="text-gray-500 mt-1">Here is what’s happening with your schedule today.</p>
+
+        @if(isset($notices) && $notices->isNotEmpty())
+        <div class="mt-6 space-y-3">
+            @foreach($notices as $notice)
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">{{ $notice->title }}</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>{{ $notice->content }}</p>
+                            </div>
+                            <div class="mt-1 text-xs text-yellow-500">
+                                Total {{ $notice->created_at->diffForHumans() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-4 sm:px-6 lg:px-8">

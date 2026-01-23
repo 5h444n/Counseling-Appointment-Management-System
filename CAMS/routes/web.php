@@ -44,8 +44,16 @@ Route::get('/dashboard', function () {
             ->where('status', 'approved')
             ->latest()
             ->first();
+            
+        $notices = \App\Models\Notice::where('user_role', 'all')
+            ->orWhere('user_role', Auth::user()->role)
+            ->latest()
+            ->take(3)
+            ->get();
+    } else {
+        $notices = collect();
     }
-    return view('dashboard', compact('nextAppointment'));
+    return view('dashboard', compact('nextAppointment', 'notices'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // User Profile & Calendar
@@ -134,6 +142,7 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
 
     // Faculty CRUD
+    Route::get('/admin/faculty', [AdminFacultyController::class, 'index'])->name('admin.faculty.index');
     Route::get('/admin/faculty/create', [AdminFacultyController::class, 'create'])->name('admin.faculty.create');
     Route::post('/admin/faculty', [AdminFacultyController::class, 'store'])->name('admin.faculty.store');
     Route::get('/admin/faculty/{id}/edit', [AdminFacultyController::class, 'edit'])->name('admin.faculty.edit');
@@ -142,6 +151,18 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     // Activity Logs
     Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');
+
+    // Student CRUD
+    Route::resource('admin/students', \App\Http\Controllers\AdminStudentController::class, ['as' => 'admin']);
+
+    // Booking Management
+    Route::get('admin/bookings/create', [\App\Http\Controllers\AdminBookingController::class, 'create'])->name('admin.bookings.create');
+    Route::post('admin/bookings', [\App\Http\Controllers\AdminBookingController::class, 'store'])->name('admin.bookings.store');
+    Route::get('admin/bookings/slots', [\App\Http\Controllers\AdminBookingController::class, 'getSlots'])->name('admin.bookings.slots');
+    Route::delete('admin/bookings/{id}', [\App\Http\Controllers\AdminBookingController::class, 'destroy'])->name('admin.bookings.destroy');
+
+    // Notice Management
+    Route::resource('admin/notices', \App\Http\Controllers\AdminNoticeController::class, ['as' => 'admin']);
 
 });
 

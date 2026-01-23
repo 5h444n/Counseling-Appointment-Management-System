@@ -6,6 +6,53 @@
             <p class="text-gray-500 text-sm">Track system activity and user actions for security and debugging.</p>
         </div>
 
+        {{-- Filters --}}
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <form action="{{ route('admin.activity-logs') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                
+                {{-- Search --}}
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search User or Action..." 
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                </div>
+
+                {{-- Action Type --}}
+                <div>
+                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Action Type</label>
+                    <select name="action_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">All Actions</option>
+                        <option value="login" {{ request('action_type') == 'login' ? 'selected' : '' }}>Login</option>
+                        <option value="logout" {{ request('action_type') == 'logout' ? 'selected' : '' }}>Logout</option>
+                        <option value="create_appointment" {{ request('action_type') == 'create_appointment' ? 'selected' : '' }}>Booked Slot</option>
+                         <option value="cancel_appointment" {{ request('action_type') == 'cancel_appointment' ? 'selected' : '' }}>Cancelled Slot</option>
+                        <option value="create_slot" {{ request('action_type') == 'create_slot' ? 'selected' : '' }}>Created Slot</option>
+                        <option value="delete_slot" {{ request('action_type') == 'delete_slot' ? 'selected' : '' }}>Deleted Slot</option>
+                    </select>
+                </div>
+
+                {{-- Role --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">User Role</label>
+                    <select name="role" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">All Roles</option>
+                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="advisor" {{ request('role') == 'advisor' ? 'selected' : '' }}>Advisor</option>
+                        <option value="student" {{ request('role') == 'student' ? 'selected' : '' }}>Student</option>
+                    </select>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="w-full px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 text-sm">Filter</button>
+                    @if(request()->anyFilled(['search', 'action_type', 'role']))
+                        <a href="{{ route('admin.activity-logs') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Clear</a>
+                    @endif
+                </div>
+
+            </form>
+        </div>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-slate-900 text-white flex justify-between items-center">
                 <h2 class="font-semibold">Recent Activity</h2>
