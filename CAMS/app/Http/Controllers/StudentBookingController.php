@@ -211,23 +211,25 @@ class StudentBookingController extends Controller
             $tab = 'upcoming';
         }
 
-        // Build base query that will be reused for both branches
-        $query = Appointment::where('student_id', Auth::id())
+        // Build base query once and reuse for both branches
+        $baseQuery = Appointment::where('student_id', Auth::id())
             ->with(['slot.advisor.department']);
 
         if ($tab === 'upcoming') {
             // Upcoming: future appointments that are still pending or approved
-            $query->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
-                ->whereIn('status', ['pending', 'approved']);
+            $appointments = (clone $baseQuery)->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
+                ->whereIn('status', ['pending', 'approved'])
+                ->orderBy('created_at', 'desc')
+                ->get();
         } else {
             // Past: appointments where slot time has passed OR status is completed/declined/cancelled/no_show
-            $query->where(function($q) use ($now) {
-                $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
-                  ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
-            });
+            $appointments = (clone $baseQuery)->where(function($q) use ($now) {
+                    $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
+                      ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
-
-        $appointments = $query->orderBy('created_at', 'desc')->get();
 
         return view('student.appointments.index', compact('appointments', 'tab'));
     }
@@ -237,27 +239,45 @@ class StudentBookingController extends Controller
      */
     public function cancel(Request $request, $id)
     {
-        $appointment = Appointment::where('id', $id)
-            ->where('student_id', Auth::id())
-            ->firstOrFail();
-
-        // Only allow cancellation for pending or approved appointments
-        if (!in_array($appointment->status, ['pending', 'approved'])) {
-            return back()->with('error', 'This appointment cannot be cancelled.');
-        }
-
-        // Prevent cancelling past appointments
-        if ($appointment->slot->start_time <= now()) {
-            return back()->with('error', 'Cannot cancel an appointment that has already started.');
-        }
-
         try {
-            DB::transaction(function () use ($appointment) {
+            DB::transaction(function () use ($id) {
+                // Lock the appointment row for update to prevent race conditions
+                // Use lockForUpdate to prevent concurrent cancellations
+                // Lock the appointment row to prevent concurrent cancellations
+                $appointment = Appointment::where('id', $id)
+                    ->where('student_id', Auth::id())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Re-check status inside transaction after acquiring lock
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('This appointment cannot be cancelled.');
+                }
+
+                // Lock and load the slot to check time
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+                // Lock the slot row as well to prevent race conditions
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Only allow cancellation for pending or approved appointments
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
+                }
+
+                // Prevent cancelling past appointments
+                if ($slot->start_time <= now()) {
+                    throw new \RuntimeException('Cannot cancel an appointment that has already started.');
+                }
+
                 // 1. Update appointment status to cancelled
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
-                $slot = $appointment->slot;
+                $slot->update(['status' => 'active']);
                 $slot->status = 'active';
                 $slot->save();
 
@@ -272,6 +292,15 @@ class StudentBookingController extends Controller
             });
 
             return back()->with('success', 'Appointment cancelled successfully.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Appointment not found or doesn't belong to this student - return 404
+            abort(404);
+        } catch (\RuntimeException $e) {
+            // Business logic validation failures
+            // Re-throw to let Laravel's exception handler return 404
+            throw $e;
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to cancel appointment. Please try again.');
