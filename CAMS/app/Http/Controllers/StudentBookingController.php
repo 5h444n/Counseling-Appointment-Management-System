@@ -237,23 +237,39 @@ class StudentBookingController extends Controller
     {
         try {
             DB::transaction(function () use ($id) {
+<<<<<<< HEAD
                 // Lock the appointment row for update to prevent race conditions
                 // Use lockForUpdate to prevent concurrent cancellations
+=======
+                // Lock the appointment row to prevent concurrent cancellations
+>>>>>>> copilot/sub-pr-78
                 $appointment = Appointment::where('id', $id)
                     ->where('student_id', Auth::id())
                     ->lockForUpdate()
                     ->firstOrFail();
 
+<<<<<<< HEAD
                 // Re-check status inside transaction after acquiring lock
                 if (!in_array($appointment->status, ['pending', 'approved'])) {
                     throw new \RuntimeException('This appointment cannot be cancelled.');
                 }
 
                 // Lock and load the slot to check time
+=======
+                // Lock the slot row as well to prevent race conditions
+>>>>>>> copilot/sub-pr-78
                 $slot = AppointmentSlot::where('id', $appointment->slot_id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
+<<<<<<< HEAD
+=======
+                // Only allow cancellation for pending or approved appointments
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
+                }
+
+>>>>>>> copilot/sub-pr-78
                 // Prevent cancelling past appointments
                 if ($slot->start_time <= now()) {
                     throw new \RuntimeException('Cannot cancel an appointment that has already started.');
@@ -263,7 +279,12 @@ class StudentBookingController extends Controller
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
+<<<<<<< HEAD
                 $slot->update(['status' => 'active']);
+=======
+                $slot->status = 'active';
+                $slot->save();
+>>>>>>> copilot/sub-pr-78
 
                 // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
                 event(new SlotFreedUp($slot));
@@ -277,10 +298,16 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+<<<<<<< HEAD
             // Appointment not found or doesn't belong to this student - return 404
             abort(404);
         } catch (\RuntimeException $e) {
             // Business logic validation failures
+=======
+            // Re-throw to let Laravel's exception handler return 404
+            throw $e;
+        } catch (\RuntimeException $e) {
+>>>>>>> copilot/sub-pr-78
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
