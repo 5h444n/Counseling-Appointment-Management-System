@@ -10,19 +10,10 @@
                     Book with <span class="text-orange-600">{{ $advisor->name }}</span>
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">{{ $advisor->department->name ?? 'Faculty Member' }}</p>
-            </div>
+        </div>
         </div>
 
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
-                <strong class="font-bold">Success!</strong> {{ session('success') }}
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
-                <strong class="font-bold">Error!</strong> {{ session('error') }}
-            </div>
-        @endif
+        {{-- Flash messages handled by global toast component --}}
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-6">
@@ -99,7 +90,41 @@
                 <div class="bg-slate-900 px-4 py-3 sm:px-6">
                     <h3 class="text-base font-semibold leading-6 text-white">Confirm Appointment</h3>
                 </div>
-                <form action="{{ route('student.book.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+                <form action="{{ route('student.book.store') }}" 
+                      method="POST" 
+                      enctype="multipart/form-data" 
+                      class="p-6"
+                      x-data="{ 
+                          submitting: false, 
+                          fileName: '',
+                          fileSize: 0,
+                          fileError: '',
+                          maxSize: 100 * 1024 * 1024,
+                          handleFileSelect(e) {
+                              const file = e.target.files[0];
+                              if (file) {
+                                  this.fileName = file.name;
+                                  this.fileSize = file.size;
+                                  if (file.size > this.maxSize) {
+                                      this.fileError = 'File too large! Maximum size is 100MB.';
+                                  } else {
+                                      this.fileError = '';
+                                  }
+                              } else {
+                                  this.fileName = '';
+                                  this.fileSize = 0;
+                                  this.fileError = '';
+                              }
+                          },
+                          formatFileSize(bytes) {
+                              if (bytes === 0) return '0 Bytes';
+                              const k = 1024;
+                              const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                              const i = Math.floor(Math.log(bytes) / Math.log(k));
+                              return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                          }
+                      }"
+                      @submit="if(!fileError && fileSize <= maxSize) { submitting = true; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="slot_id" id="modalSlotId">
 
@@ -111,19 +136,59 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
-                        <textarea name="purpose" required rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Purpose <span class="text-red-500">*</span></label>
+                        <textarea name="purpose" 
+                                  required 
+                                  rows="3" 
+                                  minlength="10"
+                                  placeholder="Please describe the purpose of your appointment (min 10 characters)..."
+                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+                                  :disabled="submitting"></textarea>
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Attachment (Optional)</label>
-                        <input type="file" name="document" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.svg" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
-                        <p class="text-xs text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG (Max: 100MB)</p>
+                        <input type="file" 
+                               name="document" 
+                               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.svg" 
+                               class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                               @change="handleFileSelect($event)"
+                               :disabled="submitting">
+                        
+                        {{-- File info display --}}
+                        <div x-show="fileName" class="mt-2 flex items-center text-sm">
+                            <svg class="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            <span x-text="fileName" class="text-gray-600 truncate max-w-xs"></span>
+                            <span class="text-gray-400 ml-2" x-text="'(' + formatFileSize(fileSize) + ')'"></span>
+                        </div>
+                        
+                        {{-- Error message --}}
+                        <p x-show="fileError" x-text="fileError" class="mt-1 text-sm text-red-600"></p>
+                        
+                        <p class="text-xs text-gray-500 mt-1">Supported: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG (Max: 100MB)</p>
                     </div>
 
                     <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                        <button type="submit" class="inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 sm:col-start-2">Confirm</button>
-                        <button type="button" onclick="closeBookingModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0">Cancel</button>
+                        <button type="submit" 
+                                :disabled="submitting || fileError"
+                                :class="{ 'opacity-50 cursor-not-allowed': submitting || fileError }"
+                                class="inline-flex w-full justify-center items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 sm:col-start-2 disabled:hover:bg-orange-600">
+                            {{-- Loading spinner --}}
+                            <svg x-show="submitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-show="!submitting">Confirm Booking</span>
+                            <span x-show="submitting">Processing...</span>
+                        </button>
+                        <button type="button" 
+                                onclick="closeBookingModal()" 
+                                :disabled="submitting"
+                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 disabled:opacity-50">
+                            Cancel
+                        </button>
                     </div>
                 </form>
             </div>
