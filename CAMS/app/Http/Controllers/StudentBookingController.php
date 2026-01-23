@@ -250,7 +250,7 @@ class StudentBookingController extends Controller
 
                 // Only allow cancellation for pending or approved appointments
                 if (!in_array($appointment->status, ['pending', 'approved'])) {
-                    throw new \RuntimeException('This appointment cannot be cancelled.');
+                    throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
                 }
 
                 // Prevent cancelling past appointments
@@ -277,7 +277,7 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Re-throw model not found exceptions to maintain 404 behavior
+            // Re-throw to let Laravel's exception handler return 404
             throw $e;
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
