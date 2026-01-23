@@ -206,20 +206,24 @@ class StudentBookingController extends Controller
         $now = now();
         $tab = $request->get('tab', 'upcoming');
 
-        $query = Appointment::where('student_id', Auth::id())
+        // Validate tab parameter to expected values
+        if (!in_array($tab, ['upcoming', 'past'])) {
+            $tab = 'upcoming';
+        }
+
+        // Build base query once and reuse for both branches
+        $baseQuery = Appointment::where('student_id', Auth::id())
             ->with(['slot.advisor.department']);
 
         if ($tab === 'upcoming') {
             // Upcoming: future appointments that are still pending or approved
-            $appointments = $query->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
+            $appointments = (clone $baseQuery)->whereHas('slot', fn($q) => $q->where('start_time', '>', $now))
                 ->whereIn('status', ['pending', 'approved'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
             // Past: appointments where slot time has passed OR status is completed/declined/cancelled/no_show
-            $appointments = Appointment::where('student_id', Auth::id())
-                ->with(['slot.advisor.department'])
-                ->where(function($q) use ($now) {
+            $appointments = (clone $baseQuery)->where(function($q) use ($now) {
                     $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
                       ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
                 })
@@ -239,6 +243,7 @@ class StudentBookingController extends Controller
             DB::transaction(function () use ($id) {
                 // Lock the appointment row for update to prevent race conditions
                 // Use lockForUpdate to prevent concurrent cancellations
+                // Lock the appointment row to prevent concurrent cancellations
                 $appointment = Appointment::where('id', $id)
                     ->where('student_id', Auth::id())
                     ->lockForUpdate()
@@ -253,6 +258,15 @@ class StudentBookingController extends Controller
                 $slot = AppointmentSlot::where('id', $appointment->slot_id)
                     ->lockForUpdate()
                     ->firstOrFail();
+                // Lock the slot row as well to prevent race conditions
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Only allow cancellation for pending or approved appointments
+                if (!in_array($appointment->status, ['pending', 'approved'])) {
+                    throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
+                }
 
                 // Prevent cancelling past appointments
                 if ($slot->start_time <= now()) {
@@ -264,6 +278,8 @@ class StudentBookingController extends Controller
 
                 // 2. Free up the slot
                 $slot->update(['status' => 'active']);
+                $slot->status = 'active';
+                $slot->save();
 
                 // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
                 event(new SlotFreedUp($slot));
@@ -281,6 +297,9 @@ class StudentBookingController extends Controller
             abort(404);
         } catch (\RuntimeException $e) {
             // Business logic validation failures
+            // Re-throw to let Laravel's exception handler return 404
+            throw $e;
+        } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
