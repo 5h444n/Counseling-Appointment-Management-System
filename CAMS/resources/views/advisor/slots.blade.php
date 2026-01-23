@@ -33,7 +33,7 @@
                             @csrf
 
                             <div>
-                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-xs text-gray-400 font-normal">(Start Date if recurring)</span></label>
                                 <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('date') border-red-500 @enderror">
                                 <x-input-error :messages="$errors->get('date')" class="mt-2" />
@@ -72,11 +72,28 @@
                                     <label for="is_recurring" class="ml-2 block text-sm text-gray-700">Repeat Weekly</label>
                                 </div>
 
-                                <div x-show="isRecurring" x-transition class="pl-6">
-                                    <label for="recurrence_weeks" class="block text-sm font-medium text-gray-700 mb-1">For how many weeks?</label>
-                                    <input type="number" id="recurrence_weeks" name="recurrence_weeks" min="1" max="12" value="4"
-                                           class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm text-sm">
-                                    <p class="text-xs text-gray-500 mt-1">Creates slots for up to 12 weeks.</p>
+                                <div x-show="isRecurring" x-transition class="pl-6 space-y-4">
+                                    <div>
+                                        <label for="recurrence_weeks" class="block text-sm font-medium text-gray-700 mb-1">For how many weeks?</label>
+                                        <input type="number" id="recurrence_weeks" name="recurrence_weeks" min="1" max="12" value="4"
+                                               class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm text-sm">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Repeats on days</label>
+                                        <div class="flex flex-wrap gap-3">
+                                            @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $index => $day)
+                                                <label class="inline-flex items-center">
+                                                    <input type="checkbox" name="days[]" value="{{ $index }}" 
+                                                           class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                                           {{ $index == 1 ? 'checked' : '' }}> {{-- Default Mon --}}
+                                                    <span class="ml-2 text-sm text-gray-600">{{ $day }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-gray-500">Creates slots for the selected days over the specified weeks.</p>
                                 </div>
                             </div>
 
