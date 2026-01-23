@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
 use App\Http\Controllers\AdvisorMinuteController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminActivityLogController;
+use App\Http\Controllers\AdminFacultyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,6 +118,29 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
+    /*
+     * Admin Dashboard:
+     * For now, the admin landing page redirects directly to the Activity Logs,
+     * since log monitoring is the primary admin task in this system.
+     * If a more traditional dashboard (summary stats, navigation cards, etc.)
+     * is introduced in the future, this route should be updated to render
+     * that dedicated dashboard view instead of redirecting.
+     */
+    Route::get('/admin/dashboard', function () {
+        return redirect()->route('admin.activity-logs');
+    })->name('admin.dashboard');
+    // Admin Dashboard (Faculty List)
+    Route::get('/admin/dashboard', [AdminFacultyController::class, 'index'])->name('admin.dashboard');
+
+    // Faculty CRUD
+    Route::get('/admin/faculty/create', [AdminFacultyController::class, 'create'])->name('admin.faculty.create');
+    Route::post('/admin/faculty', [AdminFacultyController::class, 'store'])->name('admin.faculty.store');
+    Route::get('/admin/faculty/{id}/edit', [AdminFacultyController::class, 'edit'])->name('admin.faculty.edit');
+    Route::put('/admin/faculty/{id}', [AdminFacultyController::class, 'update'])->name('admin.faculty.update');
+    Route::delete('/admin/faculty/{id}', [AdminFacultyController::class, 'destroy'])->name('admin.faculty.destroy');
+
+    // Activity Logs
+    Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');
 
 });
 

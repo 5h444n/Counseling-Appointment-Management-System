@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ActivityLogger;
 use App\Events\SlotFreedUp;
 
 class StudentBookingController extends Controller
@@ -160,6 +161,13 @@ class StudentBookingController extends Controller
                 
                 return $appointment;
             });
+
+            // Log the booking activity
+            ActivityLogger::logBooking(
+                Auth::user()->name,
+                $appointment->slot->advisor->name,
+                $appointment->token
+            );
 
             return redirect()->route('dashboard')->with('success', 'Appointment booked successfully! Wait for approval.');
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Events\SlotFreedUp;
+use App\Services\ActivityLogger;
 
 class AdvisorAppointmentController extends Controller
 {
@@ -38,7 +39,7 @@ class AdvisorAppointmentController extends Controller
             'status' => 'required|in:approved,declined',
         ]);
 
-        $appointment = Appointment::findOrFail($id);
+        $appointment = Appointment::with('student', 'slot.advisor')->findOrFail($id);
 
         // Security check: ensure this appointment belongs to the logged-in advisor
         if ($appointment->slot->advisor_id !== Auth::id()) {
@@ -60,7 +61,16 @@ class AdvisorAppointmentController extends Controller
             $slot->status = 'active';
             $slot->save();
 
-            // 3. Fire Event to notify Waitlist
+            // 3. Log the cancellation
+            if ($appointment->student && $slot->advisor) {
+                ActivityLogger::logCancellation(
+                    $appointment->student->name,
+                    $slot->advisor->name,
+                    $appointment->token
+                );
+            }
+
+            // 4. Fire Event to notify Waitlist
             try {
                 event(new SlotFreedUp($slot));
                 Log::info("Slot {$slot->id} freed. Waitlist event fired.");
