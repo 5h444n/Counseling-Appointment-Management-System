@@ -59,14 +59,26 @@
                                     <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Booked</span>
 
                                     @if(in_array($slot->id, $waitlistedSlotIds))
-                                        <div class="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-full font-semibold uppercase tracking-wide cursor-default w-full">
+                                        <div class="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-full font-semibold uppercase tracking-wide cursor-default w-full text-center">
                                             ✓ On Waitlist
                                         </div>
                                     @else
-                                        <form action="{{ route('waitlist.join', $slot->id) }}" method="POST" class="w-full">
+                                        <form action="{{ route('waitlist.join', $slot->id) }}" 
+                                              method="POST" 
+                                              class="w-full"
+                                              x-data="{ submitting: false }"
+                                              @submit="submitting = true">
                                             @csrf
-                                            <button type="submit" class="w-full text-[10px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 hover:text-orange-800 px-3 py-1 rounded-full transition font-semibold uppercase tracking-wide shadow-sm">
-                                                Join Waitlist
+                                            <button type="submit" 
+                                                    :disabled="submitting"
+                                                    :class="{ 'opacity-50': submitting }"
+                                                    class="w-full text-[10px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 hover:text-orange-800 px-3 py-1 rounded-full transition font-semibold uppercase tracking-wide shadow-sm flex items-center justify-center">
+                                                <svg x-show="submitting" class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <span x-show="!submitting">Join Waitlist</span>
+                                                <span x-show="submitting">Joining...</span>
                                             </button>
                                         </form>
                                     @endif
