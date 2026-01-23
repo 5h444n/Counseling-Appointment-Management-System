@@ -246,7 +246,7 @@ class StudentBookingController extends Controller
 
                 // Re-check status inside transaction after acquiring lock
                 if (!in_array($appointment->status, ['pending', 'approved'])) {
-                    abort(403, 'This appointment cannot be cancelled.');
+                    throw new \RuntimeException('This appointment cannot be cancelled.');
                 }
 
                 // Lock and load the slot to check time
@@ -256,7 +256,7 @@ class StudentBookingController extends Controller
 
                 // Prevent cancelling past appointments
                 if ($slot->start_time <= now()) {
-                    abort(403, 'Cannot cancel an appointment that has already started.');
+                    throw new \RuntimeException('Cannot cancel an appointment that has already started.');
                 }
 
                 // 1. Update appointment status to cancelled
@@ -278,8 +278,11 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Re-throw ModelNotFoundException to let Laravel handle it (returns 404)
-            throw $e;
+            // Appointment not found or doesn't belong to this student - return 404
+            abort(404);
+        } catch (\RuntimeException $e) {
+            // Business logic validation failures
+            return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to cancel appointment. Please try again.');
