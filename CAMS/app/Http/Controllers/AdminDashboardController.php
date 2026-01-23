@@ -13,6 +13,17 @@ class AdminDashboardController extends Controller
 {
     /**
      * Display the admin dashboard with analytics widgets.
+     *
+     * The returned view receives the following data:
+     * - string $topAdvisorName     Name of the most booked advisor or 'N/A'.
+     * - int    $topAdvisorCount    Number of appointments for the top advisor.
+     * - float  $totalHours         Total counseling hours across completed appointments.
+     * - int    $totalAppointments  Total number of appointments.
+     * - int    $pendingRequests    Number of appointments with pending status.
+     *
+     * @return \Illuminate\Contracts\View\View
+     *
+     * @throws \Throwable If an error occurs while retrieving dashboard statistics.
      */
     public function index()
     {
