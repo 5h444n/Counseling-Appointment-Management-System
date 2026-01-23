@@ -51,7 +51,7 @@ class CalendarController extends Controller
                     'start' => $app->slot->start_time->toIso8601String(),
                     'end' => $app->slot->end_time->toIso8601String(),
                     'color' => $color,
-                    'url' => route('student.appointments.show', $app->id), // Link to details
+                    'url' => route('student.appointments.index'), // Link to appointment list
                     'extendedProps' => [
                         'type' => 'appointment',
                         'status' => $app->status
