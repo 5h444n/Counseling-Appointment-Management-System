@@ -191,7 +191,7 @@ class StudentAppointmentHistoryTest extends TestCase
     }
 
     /**
-     * Test appointments with different statuses are displayed.
+     * Test appointments with different statuses are displayed in appropriate tabs.
      */
     public function test_appointments_with_different_statuses_are_displayed(): void
     {
@@ -222,20 +222,23 @@ class StudentAppointmentHistoryTest extends TestCase
             ]);
         }
 
+        // Check upcoming tab for pending and approved
         $response = $this
             ->actingAs($student)
-            ->get('/student/my-appointments');
+            ->get('/student/my-appointments?tab=upcoming');
 
         $response->assertOk();
-
-        // Check for tokens of pending and approved appointments
-        // The view shows tokens only for pending and approved status
         $response->assertSee($tokens['pending']);
         $response->assertSee($tokens['approved']);
-        
-        // Check for different status text
         $response->assertSee('Pending');
         $response->assertSee('Confirmed');
+
+        // Check past tab for declined
+        $response = $this
+            ->actingAs($student)
+            ->get('/student/my-appointments?tab=past');
+
+        $response->assertOk();
         $response->assertSee('Declined');
     }
 
@@ -270,5 +273,61 @@ class StudentAppointmentHistoryTest extends TestCase
 
         // The route is under 'student' middleware, so advisors get 403
         $response->assertStatus(403);
+    }
+
+    /**
+     * Test that invalid tab values default to upcoming.
+     */
+    public function test_invalid_tab_values_default_to_upcoming(): void
+    {
+        $advisor = User::factory()->advisor()->create(['name' => 'Dr. Smith']);
+        $student = User::factory()->create(['role' => 'student']);
+
+        // Create a future appointment (should show in upcoming)
+        $futureSlot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::tomorrow()->setTime(10, 0),
+            'end_time' => Carbon::tomorrow()->setTime(10, 30),
+            'status' => 'blocked',
+            'is_recurring' => false,
+        ]);
+
+        $futureAppointment = Appointment::create([
+            'student_id' => $student->id,
+            'slot_id' => $futureSlot->id,
+            'purpose' => 'Future appointment',
+            'status' => 'approved',
+            'token' => 'CSE-1-F',
+        ]);
+
+        // Create a past appointment (should NOT show in upcoming)
+        $pastSlot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::yesterday()->setTime(10, 0),
+            'end_time' => Carbon::yesterday()->setTime(10, 30),
+            'status' => 'blocked',
+            'is_recurring' => false,
+        ]);
+
+        $pastAppointment = Appointment::create([
+            'student_id' => $student->id,
+            'slot_id' => $pastSlot->id,
+            'purpose' => 'Past appointment',
+            'status' => 'completed',
+            'token' => 'CSE-1-P',
+        ]);
+
+        // Test with invalid tab value - should default to upcoming
+        $response = $this
+            ->actingAs($student)
+            ->get('/student/my-appointments?tab=invalid');
+
+        $response->assertOk();
+        // Should show only future appointment
+        $response->assertSee('CSE-1-F');
+        $response->assertDontSee('CSE-1-P');
+        
+        // Verify the tab variable is set to 'upcoming'
+        $this->assertEquals('upcoming', $response->viewData('tab'));
     }
 }
