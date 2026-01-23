@@ -34,7 +34,12 @@ class Appointment extends Model
     }
 
     public function minute()
-{
-    return $this->hasOne(Minute::class);
-}
+    {
+        return $this->hasOne(Minute::class);
+    }
+
+    public function feedback()
+    {
+        return $this->hasOne(Feedback::class);
+    }
 }

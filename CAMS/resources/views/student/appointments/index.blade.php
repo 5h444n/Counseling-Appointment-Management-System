@@ -86,6 +86,59 @@
                                     <button onclick="window.print()" class="text-indigo-600 hover:text-indigo-900 text-xs mr-2">Print Slip</button>
                                 @endif
 
+                                @if($app->status === 'completed' && !$app->feedback)
+                                    <div x-data="{ showRating: false }" class="inline-block">
+                                        <button @click="showRating = true" class="text-orange-600 hover:text-orange-900 text-xs font-bold mr-2">Rate Session</button>
+
+                                        {{-- Rating Modal --}}
+                                        <div x-show="showRating" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-rating-{{ $app->id }}" role="dialog" aria-modal="true">
+                                            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showRating = false"></div>
+                                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-rating-{{ $app->id }}">Rate Your Session</h3>
+                                                    <form action="{{ route('feedback.store') }}" method="POST" class="mt-4">
+                                                        @csrf
+                                                        <input type="hidden" name="appointment_id" value="{{ $app->id }}">
+                                                        
+                                                        <div class="mb-4">
+                                                            <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                                                            <div class="flex space-x-2">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <label class="cursor-pointer">
+                                                                        <input type="radio" name="rating" value="{{ $i }}" class="sr-only peer" required>
+                                                                        <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                                        </svg>
+                                                                    </label>
+                                                                @endfor
+                                                            </div>
+                                                            <p class="text-xs text-gray-400 mt-1">Select 1 to 5 stars taking into account your overall satisfaction.</p>
+                                                        </div>
+
+                                                        <div class="mb-4">
+                                                            <label for="comment" class="block text-sm font-medium text-gray-700">Comment (Optional)</label>
+                                                            <textarea name="comment" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                                                        </div>
+
+                                                        <div class="mb-4 flex items-center">
+                                                            <input type="checkbox" name="is_anonymous" id="anon-{{ $app->id }}" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                            <label for="anon-{{ $app->id }}" class="ml-2 block text-sm text-gray-900">Submit anonymously</label>
+                                                        </div>
+
+                                                        <div class="flex justify-end">
+                                                            <button type="button" @click="showRating = false" class="mr-3 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+                                                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Submit Feedback</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @elseif($app->status === 'completed' && $app->feedback)
+                                    <span class="text-xs text-green-600 font-semibold mr-2">✓ Rated</span>
+                                @endif
+
                                 {{-- Cancel Button for Upcoming appointments --}}
                                 @if($tab === 'upcoming' && in_array($app->status, ['pending', 'approved']) && $app->slot->start_time > now())
                                     <div x-data="{ showConfirm: false }" class="inline-block">
