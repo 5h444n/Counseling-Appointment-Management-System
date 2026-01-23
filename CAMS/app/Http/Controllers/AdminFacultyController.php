@@ -14,14 +14,26 @@ class AdminFacultyController extends Controller
     /**
      * Display a listing of all faculty (advisors).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $faculty = User::where('role', 'advisor')
-            ->with('department')
-            ->orderBy('name')
-            ->get();
+        $query = User::where('role', 'advisor')->with('department')->orderBy('name');
 
-        return view('admin.faculty.index', compact('faculty'));
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+         if ($request->has('department_id') && $request->department_id != '') {
+             $query->where('department_id', $request->department_id);
+        }
+
+        $faculty = $query->get(); // or paginate
+        $departments = Department::orderBy('name')->get();
+
+        return view('admin.faculty.index', compact('faculty', 'departments'));
     }
 
     /**

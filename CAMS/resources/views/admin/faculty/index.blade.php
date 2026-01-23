@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Faculty Management</h1>
                 <p class="text-gray-500 text-sm">Manage faculty/advisor accounts in the system.</p>
@@ -13,6 +13,30 @@
                 </svg>
                 Add Faculty
             </a>
+        </div>
+
+        {{-- Search & Filter --}}
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
+             <form action="{{ route('admin.faculty.index') }}" method="GET" class="flex-1 flex gap-4">
+                <div class="flex-1">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..." 
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div class="w-48">
+                    <select name="department_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">All Departments</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                                {{ $dept->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">Filter</button>
+                @if(request()->has('search') || request()->has('department_id'))
+                    <a href="{{ route('admin.faculty.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Clear</a>
+                @endif
+             </form>
         </div>
 
         {{-- Flash messages handled by global toast --}}

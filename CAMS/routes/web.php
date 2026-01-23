@@ -33,14 +33,25 @@ Route::get('/', function () {
 
 // Main Dashboard: The landing page after login (Accessible by all roles)
 Route::get('/dashboard', function () {
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
     $nextAppointment = null;
     if (Auth::check()) {
         $nextAppointment = \App\Models\Appointment::where('student_id', Auth::id())
             ->where('status', 'approved')
             ->latest()
             ->first();
+            
+        $notices = \App\Models\Notice::where('user_role', 'all')
+            ->orWhere('user_role', Auth::user()->role)
+            ->latest()
+            ->take(3)
+            ->get();
+    } else {
+        $notices = collect();
     }
-    return view('dashboard', compact('nextAppointment'));
+    return view('dashboard', compact('nextAppointment', 'notices'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // User Profile: Settings for Password/Name updates
@@ -118,21 +129,9 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
-    /*
-     * Admin Dashboard:
-     * For now, the admin landing page redirects directly to the Activity Logs,
-     * since log monitoring is the primary admin task in this system.
-     * If a more traditional dashboard (summary stats, navigation cards, etc.)
-     * is introduced in the future, this route should be updated to render
-     * that dedicated dashboard view instead of redirecting.
-     */
-    Route::get('/admin/dashboard', function () {
-        return redirect()->route('admin.activity-logs');
-    })->name('admin.dashboard');
-    // Admin Dashboard (Faculty List)
-    Route::get('/admin/dashboard', [AdminFacultyController::class, 'index'])->name('admin.dashboard');
 
     // Faculty CRUD
+    Route::get('/admin/faculty', [AdminFacultyController::class, 'index'])->name('admin.faculty.index');
     Route::get('/admin/faculty/create', [AdminFacultyController::class, 'create'])->name('admin.faculty.create');
     Route::post('/admin/faculty', [AdminFacultyController::class, 'store'])->name('admin.faculty.store');
     Route::get('/admin/faculty/{id}/edit', [AdminFacultyController::class, 'edit'])->name('admin.faculty.edit');
@@ -141,6 +140,18 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     // Activity Logs
     Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');
+
+    // Student CRUD
+    Route::resource('admin/students', \App\Http\Controllers\AdminStudentController::class, ['as' => 'admin']);
+
+    // Booking Management
+    Route::get('admin/bookings/create', [\App\Http\Controllers\AdminBookingController::class, 'create'])->name('admin.bookings.create');
+    Route::post('admin/bookings', [\App\Http\Controllers\AdminBookingController::class, 'store'])->name('admin.bookings.store');
+    Route::get('admin/bookings/slots', [\App\Http\Controllers\AdminBookingController::class, 'getSlots'])->name('admin.bookings.slots');
+    Route::delete('admin/bookings/{id}', [\App\Http\Controllers\AdminBookingController::class, 'destroy'])->name('admin.bookings.destroy');
+
+    // Notice Management
+    Route::resource('admin/notices', \App\Http\Controllers\AdminNoticeController::class, ['as' => 'admin']);
 
 });
 

@@ -27,7 +27,6 @@ class ActivityLogger
                 'description' => $description,
                 'ip_address' => Request::ip(),
             ]);
-        } catch (\Exception $e) {
         } catch (\Illuminate\Database\QueryException | \PDOException $e) {
             // Catch database-related exceptions specifically
             Log::error('Failed to create activity log', [
@@ -37,7 +36,6 @@ class ActivityLogger
                 'ip_address' => Request::ip(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
-            ]);
             ]);
             // Return null so that audit logging failures don't break core functionality
             return null;
