@@ -7,6 +7,7 @@ use App\Http\Controllers\AdvisorAppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
 use App\Http\Controllers\AdvisorMinuteController;
+use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminFacultyController;
 
 /*
@@ -114,6 +115,17 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
 // =========================================================================
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    /*
+     * Admin Dashboard:
+     * For now, the admin landing page redirects directly to the Activity Logs,
+     * since log monitoring is the primary admin task in this system.
+     * If a more traditional dashboard (summary stats, navigation cards, etc.)
+     * is introduced in the future, this route should be updated to render
+     * that dedicated dashboard view instead of redirecting.
+     */
+    Route::get('/admin/dashboard', function () {
+        return redirect()->route('admin.activity-logs');
+    })->name('admin.dashboard');
     // Admin Dashboard (Faculty List)
     Route::get('/admin/dashboard', [AdminFacultyController::class, 'index'])->name('admin.dashboard');
 
@@ -123,6 +135,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/faculty/{id}/edit', [AdminFacultyController::class, 'edit'])->name('admin.faculty.edit');
     Route::put('/admin/faculty/{id}', [AdminFacultyController::class, 'update'])->name('admin.faculty.update');
     Route::delete('/admin/faculty/{id}', [AdminFacultyController::class, 'destroy'])->name('admin.faculty.destroy');
+
+    // Activity Logs
+    Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');
 
 });
 

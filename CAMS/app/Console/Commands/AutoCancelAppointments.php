@@ -8,6 +8,7 @@ use App\Models\AppointmentSlot;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\ActivityLogger;
 
 class AutoCancelAppointments extends Command
 {
@@ -31,7 +32,7 @@ class AutoCancelAppointments extends Command
         // TASK 1: Auto-Cancel Pending Requests older than 24 hours
         $expiredTime = Carbon::now()->subHours(24);
 
-        $staleAppointments = Appointment::with('slot')
+        $staleAppointments = Appointment::with('slot.advisor', 'student')
             ->where('status', 'pending')
             ->where('created_at', '<', $expiredTime)
             ->get();
@@ -46,6 +47,15 @@ class AutoCancelAppointments extends Command
                     $app->slot->update(['status' => 'active']);
                 } else {
                     Log::warning("Appointment #{$app->id} has no associated slot.");
+                }
+
+                // Log the cancellation
+                if ($app->student && $app->slot && $app->slot->advisor) {
+                    ActivityLogger::logCancellation(
+                        $app->student->name,
+                        $app->slot->advisor->name,
+                        $app->token
+                    );
                 }
             });
 
