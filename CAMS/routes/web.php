@@ -32,10 +32,12 @@ Route::get('/', function () {
 });
 
 // Main Dashboard: The landing page after login (Accessible by all roles)
+// Main Dashboard: The landing page after login (Accessible by all roles)
 Route::get('/dashboard', function () {
     if (Auth::user()->role === 'admin') {
         return redirect()->route('admin.dashboard');
     }
+    
     $nextAppointment = null;
     if (Auth::check()) {
         $nextAppointment = \App\Models\Appointment::where('student_id', Auth::id())
@@ -54,11 +56,19 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('nextAppointment', 'notices'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// User Profile: Settings for Password/Name updates
+// User Profile & Calendar
 Route::middleware('auth')->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Calendar
+    Route::controller(\App\Http\Controllers\CalendarController::class)->group(function () {
+        Route::get('/calendar/events', 'fetchEvents')->name('calendar.events');
+        Route::post('/calendar/events', 'store')->name('calendar.store');
+        Route::delete('/calendar/events/{id}', 'destroy')->name('calendar.destroy');
+    });
 });
 
 /*
@@ -129,6 +139,7 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/export', [AdminDashboardController::class, 'export'])->name('admin.export');
+
 
     // Faculty CRUD
     Route::get('/admin/faculty', [AdminFacultyController::class, 'index'])->name('admin.faculty.index');

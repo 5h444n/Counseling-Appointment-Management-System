@@ -107,5 +107,11 @@
                 </table>
             </div>
         </div>
+
+
+        {{-- Calendar Integration --}}
+        <div class="mt-8 mb-12">
+            <x-calendar />
+        </div>
     </div>
 </x-app-layout>

@@ -144,4 +144,10 @@
             </div>
         </div>
     </div>
+
+
+    {{-- Calendar Integration --}}
+    <div class="px-4 sm:px-6 lg:px-8 mt-8 mb-12">
+        <x-calendar />
+    </div>
 </x-app-layout>
