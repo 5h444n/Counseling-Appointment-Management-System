@@ -206,6 +206,12 @@ class StudentBookingController extends Controller
         $now = now();
         $tab = $request->get('tab', 'upcoming');
 
+        // Validate tab parameter to expected values
+        if (!in_array($tab, ['upcoming', 'past'])) {
+            $tab = 'upcoming';
+        }
+
+        // Build base query once and reuse for both branches
         $query = Appointment::where('student_id', Auth::id())
             ->with(['slot.advisor.department']);
 
@@ -217,9 +223,7 @@ class StudentBookingController extends Controller
                 ->get();
         } else {
             // Past: appointments where slot time has passed OR status is completed/declined/cancelled/no_show
-            $appointments = Appointment::where('student_id', Auth::id())
-                ->with(['slot.advisor.department'])
-                ->where(function($q) use ($now) {
+            $appointments = $query->where(function($q) use ($now) {
                     $q->whereHas('slot', fn($sq) => $sq->where('start_time', '<=', $now))
                       ->orWhereIn('status', ['completed', 'declined', 'cancelled', 'no_show']);
                 })
