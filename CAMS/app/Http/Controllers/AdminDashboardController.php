@@ -32,12 +32,10 @@ class AdminDashboardController extends Controller
             ->join('appointment_slots as slots', 'appointments.slot_id', '=', 'slots.id')
             ->groupBy('slots.advisor_id')
             ->orderByDesc('total')
-            ->with('slot.advisor') // Load advisor user details using nested relationship
             ->first();
 
-        // If topAdvisor exists, we need to manually load the advisor because the 'with' on a join 
-        // might behave unexpectedly if not careful with model relations. 
-        // But since we are selecting slots.advisor_id, we can just fetch the user.
+        // The aggregated query above only returns advisor_id and total count, not full Appointment models.
+        // We therefore manually load the advisor user using advisor_id from the result.
         $topAdvisorName = 'N/A';
         $topAdvisorCount = 0;
         
