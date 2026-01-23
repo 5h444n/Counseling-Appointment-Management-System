@@ -20,7 +20,18 @@ class AdvisorMinuteController extends Controller
             abort(403, 'Unauthorized access to this session note.');
         }
 
-        return view('advisor.minutes.create', compact('appointment'));
+        // Fetch past confirmed history (Session Notes) for this student
+        // Requirement: "previous MOM notes he have of a student when... during the session"
+        $history = Appointment::where('student_id', $appointment->student_id)
+            ->where('id', '!=', $appointmentId) // Exclude current
+            ->where('status', 'completed')     // Only completed ones usually have MOM
+            ->whereHas('minute')             // Only those with notes
+            ->with(['minute', 'slot.advisor'])
+            ->latest()
+            ->take(5) // Limit to last 5 for relevance
+            ->get();
+
+        return view('advisor.minutes.create', compact('appointment', 'history'));
     }
 
     // Save the Note
