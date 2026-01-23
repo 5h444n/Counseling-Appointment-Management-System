@@ -29,7 +29,11 @@ class ActivityLogger
         } catch (\Exception $e) {
             Log::error('Failed to create activity log', [
                 'action' => $action,
-                'error' => $e->getMessage()
+                'description' => $description,
+                'user_id' => $userId ?? Auth::id(),
+                'ip_address' => Request::ip(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
