@@ -1,22 +1,46 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-gray-800">Wellness Hub</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Resource Hub</h1>
             <p class="text-gray-500 mt-2">Explore our library of self-help guides, academic resources, and mental health support.</p>
             
             {{-- Search & Filter --}}
-            <div class="mt-6 max-w-xl mx-auto">
+            <div class="mt-6 max-w-xl mx-auto space-y-4">
                 <form action="{{ route('student.resources.index') }}" method="GET" class="relative">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search query..." class="w-full rounded-full border-gray-300 pl-4 pr-12 py-3 shadow-sm focus:border-orange-500 focus:ring-orange-500">
                     <button type="submit" class="absolute right-2 top-2 bg-orange-500 text-white p-1.5 rounded-full hover:bg-orange-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </button>
+                    
+                    {{-- Hidden inputs to preserve other filters --}}
+                    @if(request('category')) <input type="hidden" name="category" value="{{ request('category') }}"> @endif
+                    @if(request('advisor_id')) <input type="hidden" name="advisor_id" value="{{ request('advisor_id') }}"> @endif
                 </form>
+
+                <div class="flex justify-center gap-4">
+                     {{-- Advisor Filter --}}
+                     <div class="relative group" x-data="{ open: false }">
+                        <button @click="open = !open" @click.away="open = false" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                            <svg class="mr-2 h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            {{ request('advisor_id') ? $advisors->where('id', request('advisor_id'))->first()->name : 'Filter by Advisor' }}
+                            <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div x-show="open" class="origin-top bg-white border border-gray-200 rounded-md shadow-lg absolute mt-2 w-56 z-20" style="display: none;">
+                            <div class="py-1">
+                                <a href="{{ route('student.resources.index', array_merge(request()->except('advisor_id'), ['advisor_id' => null])) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">All Advisors</a>
+                                @foreach($advisors as $advisor)
+                                    <a href="{{ route('student.resources.index', array_merge(request()->except('advisor_id'), ['advisor_id' => $advisor->id])) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ $advisor->name }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Categories --}}
-                <div class="flex flex-wrap justify-center gap-2 mt-4">
-                    <a href="{{ route('student.resources.index') }}" class="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors {{ !request('category') ? 'bg-orange-50 text-orange-700 border-orange-200' : '' }}">All</a>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <a href="{{ route('student.resources.index', request()->except('category')) }}" class="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors {{ !request('category') ? 'bg-orange-50 text-orange-700 border-orange-200' : '' }}">All Categories</a>
                     @foreach(['Academic', 'Mental Health', 'Wellness', 'Career', 'Other'] as $cat)
-                        <a href="{{ route('student.resources.index', ['category' => $cat]) }}" 
+                        <a href="{{ route('student.resources.index', array_merge(request()->except('category'), ['category' => $cat])) }}" 
                            class="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors {{ request('category') == $cat ? 'bg-orange-50 text-orange-700 border-orange-200' : '' }}">
                             {{ $cat }}
                         </a>
@@ -30,9 +54,14 @@
                 @foreach($resources as $resource)
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow flex flex-col h-full">
                         <div class="flex-1">
-                            <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center justify-between mb-2">
                                 <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">{{ $resource->category }}</span>
                                 <span class="text-xs text-gray-400">{{ $resource->created_at->diffForHumans() }}</span>
+                            </div>
+                            <div class="mb-4 flex items-center">
+                                <span class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full">
+                                    By {{ $resource->uploader->name }}
+                                </span>
                             </div>
                             
                             <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $resource->title }}</h3>

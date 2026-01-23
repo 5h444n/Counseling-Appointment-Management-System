@@ -13,15 +13,38 @@ class ResourceController extends Controller
      * Display a listing of resources.
      * Shared for Students (view only) and Advisors/Admins (manage).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $resources = Resource::with('uploader')
-            ->latest()
-            ->paginate(12);
+        $query = Resource::with('uploader');
+
+        // Filter by Category
+        if ($request->has('category') && $request->category) {
+            $query->where('category', $request->category);
+        }
+
+        // Filter by Advisor
+        if ($request->has('advisor_id') && $request->advisor_id) {
+            $query->where('uploaded_by', $request->advisor_id);
+        }
+
+        // Search
+        if ($request->has('search') && $request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $resources = $query->latest()->paginate(12);
+        
+        // Get list of advisors who have uploaded resources for the filter
+        $advisors = \App\Models\User::where('role', 'advisor')
+            ->whereHas('resources') // Only advisors with uploads
+            ->get();
 
         $view = Auth::user()->role === 'student' ? 'student.resources.index' : 'advisor.resources.index';
         
-        return view($view, compact('resources'));
+        return view($view, compact('resources', 'advisors'));
     }
 
     /**

@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Appointment::class, 'student_id');
     }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class, 'uploaded_by');
+    }
 }

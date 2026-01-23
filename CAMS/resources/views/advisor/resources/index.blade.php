@@ -1,7 +1,6 @@
-<x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Resource Library</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Resource Hub</h1>
             <p class="text-gray-500 text-sm">Upload and manage help documents for students.</p>
         </div>
 
