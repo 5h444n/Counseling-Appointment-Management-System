@@ -63,13 +63,21 @@ class AdminDashboardController extends Controller
         // Additional Stats
         $totalAppointments = Appointment::count();
         $pendingRequests = Appointment::where('status', 'pending')->count();
+        
+        // New Summaries
+        $totalStudents = User::where('role', 'student')->count();
+        $totalFaculty = User::where('role', 'advisor')->count();
+        $totalNotices = \App\Models\Notice::count();
 
         return view('admin.dashboard', compact(
             'topAdvisorName', 
             'topAdvisorCount', 
             'totalHours', 
             'totalAppointments', 
-            'pendingRequests'
+            'pendingRequests',
+            'totalStudents',
+            'totalFaculty',
+            'totalNotices'
         ));
     }
 
