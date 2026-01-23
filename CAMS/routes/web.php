@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdvisorScheduleController;
 use App\Http\Controllers\AdvisorMinuteController;
 use App\Http\Controllers\AdminActivityLogController;
+use App\Http\Controllers\AdminFacultyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'student', 'throttle:60,1'])->group(function () {
     Route::get('/student/my-appointments', [StudentBookingController::class, 'myAppointments'])->name('student.appointments.index');
 
     Route::post('/waitlist/{slot_id}', [StudentBookingController::class, 'joinWaitlist'])->name('waitlist.join');
+
+    // Cancel an upcoming appointment
+    Route::post('/student/appointments/{id}/cancel', [StudentBookingController::class, 'cancel'])->name('student.appointments.cancel');
 });
 
 
@@ -122,6 +126,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return redirect()->route('admin.activity-logs');
     })->name('admin.dashboard');
+    // Admin Dashboard (Faculty List)
+    Route::get('/admin/dashboard', [AdminFacultyController::class, 'index'])->name('admin.dashboard');
+
+    // Faculty CRUD
+    Route::get('/admin/faculty/create', [AdminFacultyController::class, 'create'])->name('admin.faculty.create');
+    Route::post('/admin/faculty', [AdminFacultyController::class, 'store'])->name('admin.faculty.store');
+    Route::get('/admin/faculty/{id}/edit', [AdminFacultyController::class, 'edit'])->name('admin.faculty.edit');
+    Route::put('/admin/faculty/{id}', [AdminFacultyController::class, 'update'])->name('admin.faculty.update');
+    Route::delete('/admin/faculty/{id}', [AdminFacultyController::class, 'destroy'])->name('admin.faculty.destroy');
 
     // Activity Logs
     Route::get('/admin/activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs');

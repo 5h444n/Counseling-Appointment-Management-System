@@ -36,5 +36,9 @@
         @include('layouts.footer')
     </div>
 </div>
+
+{{-- Global Toast Notifications --}}
+<x-toast />
+
 </body>
 </html>
