@@ -281,7 +281,7 @@ class StudentBookingController extends Controller
                 $slot->status = 'active';
                 $slot->save();
 
-                // 3. Fire event to notify waitlist (same pattern as AdvisorAppointmentController)
+                // 3. Fire event to notify waitlist
                 event(new SlotFreedUp($slot));
 
                 Log::info("Student cancelled appointment", [
@@ -293,6 +293,10 @@ class StudentBookingController extends Controller
 
             return back()->with('success', 'Appointment cancelled successfully.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Appointment not found or doesn't belong to this student
+            abort(404);
+        } catch (\RuntimeException $e) {
+            // Business logic validation failures
             // Appointment not found or doesn't belong to this student - return 404
             abort(404);
         } catch (\RuntimeException $e) {
