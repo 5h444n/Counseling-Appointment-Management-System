@@ -2,12 +2,14 @@
 
 ## Executive Summary
 
-**Date:** January 20, 2026  
+**Date:** January 23, 2026  
 **Repository:** 5h444n/Counseling-Appointment-Management-System  
 **Total Issues:** 25  
 **Open Issues:** 10  
 **Closed Issues:** 15  
-**Status:** Core student and advisor features fully implemented and tested, admin features and UI enhancements pending
+**Status:** Core student and advisor features fully implemented with 28 bugs identified and documented
+**Test Results:** 194 passing, 7 failing (failure rate: 3.5%)  
+**Bug Report:** See BUGS.md for comprehensive analysis
 
 ---
 
@@ -396,8 +398,86 @@ The CAMS project has a **strong technical foundation** with all core student and
 
 ---
 
-**Report Generated:** January 20, 2026  
-**Last Updated:** January 20, 2026  
-**Report Version:** 2.0  
+## 🐛 Bug Analysis Summary
+
+**Comprehensive Bug Report:** See [BUGS.md](BUGS.md) for detailed findings
+
+### Bugs by Severity
+| Severity | Count | Impact |
+|----------|-------|--------|
+| 🔴 CRITICAL | 4 | Broken functionality (admin booking, error handling) |
+| 🟠 HIGH | 7 | Security, performance, test failures |
+| 🟡 MEDIUM | 13 | Code quality, data integrity |
+| 🟢 LOW | 4 | Documentation, maintainability |
+| **TOTAL** | **28** | |
+
+### Critical Bugs Requiring Immediate Fix
+1. **BUG-001:** AdminBookingController uses wrong slot status values ('open'/'booked' instead of 'active'/'blocked') - **BREAKS ADMIN BOOKING**
+2. **BUG-002:** Duplicate exception handlers in StudentBookingController::cancel() - Returns 404 instead of redirect with error
+3. **BUG-003:** Inconsistent session flash key ('warning' instead of 'error') - **BREAKS 3 TESTS**
+4. **BUG-004:** Admin dashboard redirect causes test failure (returns 302 instead of 200)
+
+### Test Failures
+```
+Tests:    7 failed, 194 passed (201 total)
+Duration: 8.69s
+Success Rate: 96.5%
+```
+
+**Failed Tests:**
+1. AdvisorSlotTest::returns error when time range too short for slots
+2. DashboardTest::admins can access dashboard
+3. SlotOverlapDetectionTest::overlapping slots are not created
+4. SlotOverlapDetectionTest::creating slots for today works
+5. StudentAppointmentCancellationTest::student cannot cancel past appointment
+6. StudentAppointmentCancellationTest::student cannot cancel declined appointment
+7. StudentBookingControllerTest::only active future slots are displayed
+
+### Security Vulnerabilities Found
+- **HIGH:** Missing authorization in AdvisorMinuteController (advisors could access other advisors' appointment notes)
+- **HIGH:** Missing CSRF token in admin booking AJAX request
+- **MEDIUM:** File upload path traversal risk (unsanitized filenames)
+- **MEDIUM:** Missing logging for critical admin actions (user deletion, etc.)
+
+### Performance Issues Found
+- **HIGH:** N+1 query in AdminDashboardController::index() - Loads all appointments into memory
+- **MEDIUM:** Missing pagination in AdminFacultyController and AdminStudentController
+- **MEDIUM:** Duplicate slot locking in cancel operation
+
+### Data Integrity Issues Found
+- **MEDIUM:** Nullable unique token allows multiple NULL values
+- **MEDIUM:** Missing cascade delete validation
+- **MEDIUM:** Orphaned feedback records possible if advisor deleted
+
+---
+
+## 📈 Testing Coverage
+
+### Test Statistics
+- **Total Tests:** 201
+- **Passing:** 194 (96.5%)
+- **Failing:** 7 (3.5%)
+- **Test Files:** 23
+- **Assertions:** 539
+
+### Test Categories
+| Category | Tests | Status |
+|----------|-------|--------|
+| Unit Tests | 22 | ✅ All passing |
+| Feature Tests | 169 | ⚠️ 7 failing |
+| Auth Tests | 10 | ✅ All passing |
+
+### Code Quality Metrics
+- **PSR-12 Compliance:** ~95%
+- **Documentation:** Good (README, docs, inline comments)
+- **Code Duplication:** Low (some identified in BUG-012, BUG-013)
+- **Security Best Practices:** Good (some gaps identified in BUGS.md)
+
+---
+
+**Report Generated:** January 23, 2026  
+**Last Updated:** January 23, 2026  
+**Report Version:** 3.0  
 **Reviewed By:** GitHub Copilot Agent  
-**Status:** Comprehensive repository review completed
+**Status:** Comprehensive repository review and bug analysis completed  
+**Bugs Documented:** 28 (4 critical, 7 high, 13 medium, 4 low)
