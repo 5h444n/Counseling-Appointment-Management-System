@@ -16,6 +16,7 @@ class ActivityLogger
      * @param string $description Human-readable description
      * @param int|null $userId Optional user ID (defaults to authenticated user)
      * @return ActivityLog|null
+     * @return ActivityLog|null Returns ActivityLog on success, null on failure
      */
     public static function log(string $action, string $description, ?int $userId = null): ?ActivityLog
     {
@@ -27,6 +28,8 @@ class ActivityLogger
                 'ip_address' => Request::ip(),
             ]);
         } catch (\Exception $e) {
+        } catch (\Illuminate\Database\QueryException | \PDOException $e) {
+            // Catch database-related exceptions specifically
             Log::error('Failed to create activity log', [
                 'action' => $action,
                 'description' => $description,
@@ -35,6 +38,8 @@ class ActivityLogger
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            ]);
+            // Return null so that audit logging failures don't break core functionality
             return null;
         }
     }

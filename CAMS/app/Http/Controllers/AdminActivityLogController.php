@@ -20,7 +20,7 @@ class AdminActivityLogController extends Controller
             $search = $request->input('search');
 
             $query->where(function ($q) use ($search) {
-                $q->where('action_type', 'like', '%' . $search . '%')
+                $q->where('action', 'like', '%' . $search . '%')
                     ->orWhereHas('user', function ($uq) use ($search) {
                         $uq->where('name', 'like', '%' . $search . '%');
                     });
@@ -38,7 +38,7 @@ class AdminActivityLogController extends Controller
 
         // Action type filter (e.g., login, booking, cancellation)
         if ($request->filled('action_type')) {
-            $query->where('action_type', $request->input('action_type'));
+            $query->where('action', $request->input('action_type'));
         }
 
         // User role filter
