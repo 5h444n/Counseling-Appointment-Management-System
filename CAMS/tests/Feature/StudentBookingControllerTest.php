@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use App\Models\Department;
 use App\Models\AppointmentSlot;
@@ -374,5 +375,91 @@ class StudentBookingControllerTest extends TestCase
             ->get('/student/advisors/99999');
 
         $response->assertStatus(404);
+    }
+
+    /**
+     * Test that activity log is created when booking an appointment.
+     */
+    public function test_activity_log_is_created_when_booking_appointment(): void
+    {
+        $cseDept = Department::where('code', 'CSE')->first();
+        $student = User::factory()->create([
+            'role' => 'student',
+            'name' => 'John Student',
+            'department_id' => $cseDept->id,
+        ]);
+        $advisor = User::factory()->advisor()->create(['name' => 'Dr. Advisor']);
+
+        $slot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::tomorrow()->setTime(10, 0),
+            'end_time' => Carbon::tomorrow()->setTime(10, 30),
+            'status' => 'active',
+            'is_recurring' => false,
+        ]);
+
+        // Count activity logs before booking
+        $initialCount = ActivityLog::count();
+
+        $response = $this
+            ->actingAs($student)
+            ->post('/student/book', [
+                'slot_id' => $slot->id,
+                'purpose' => 'Academic advising session',
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        // Verify appointment was created
+        $appointment = Appointment::where('student_id', $student->id)->first();
+        $this->assertNotNull($appointment);
+
+        // Verify activity log was created
+        $this->assertEquals($initialCount + 1, ActivityLog::count());
+        
+        $activityLog = ActivityLog::where('user_id', $student->id)
+            ->where('action', 'book_appointment')
+            ->first();
+
+        $this->assertNotNull($activityLog);
+        $this->assertEquals('book_appointment', $activityLog->action);
+        $this->assertStringContainsString('John Student', $activityLog->description);
+        $this->assertStringContainsString('Dr. Advisor', $activityLog->description);
+        $this->assertStringContainsString($appointment->token, $activityLog->description);
+        $this->assertNotNull($activityLog->ip_address);
+    }
+
+    /**
+     * Test that no activity log is created when booking fails.
+     */
+    public function test_no_activity_log_created_when_booking_fails(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+        $advisor = User::factory()->advisor()->create();
+
+        $slot = AppointmentSlot::create([
+            'advisor_id' => $advisor->id,
+            'start_time' => Carbon::tomorrow()->setTime(10, 0),
+            'end_time' => Carbon::tomorrow()->setTime(10, 30),
+            'status' => 'blocked', // Already taken
+            'is_recurring' => false,
+        ]);
+
+        // Count activity logs before booking attempt
+        $initialCount = ActivityLog::count();
+
+        $response = $this
+            ->actingAs($student)
+            ->from("/student/advisors/{$advisor->id}")
+            ->post('/student/book', [
+                'slot_id' => $slot->id,
+                'purpose' => 'Test purpose',
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+
+        // Verify no new activity log was created
+        $this->assertEquals($initialCount, ActivityLog::count());
     }
 }
