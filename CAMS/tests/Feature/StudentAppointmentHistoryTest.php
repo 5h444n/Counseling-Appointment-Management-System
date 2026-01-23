@@ -191,7 +191,7 @@ class StudentAppointmentHistoryTest extends TestCase
     }
 
     /**
-     * Test appointments with different statuses are displayed.
+     * Test appointments with different statuses are displayed in appropriate tabs.
      */
     public function test_appointments_with_different_statuses_are_displayed(): void
     {
@@ -222,20 +222,23 @@ class StudentAppointmentHistoryTest extends TestCase
             ]);
         }
 
+        // Check upcoming tab for pending and approved
         $response = $this
             ->actingAs($student)
-            ->get('/student/my-appointments');
+            ->get('/student/my-appointments?tab=upcoming');
 
         $response->assertOk();
-
-        // Check for tokens of pending and approved appointments
-        // The view shows tokens only for pending and approved status
         $response->assertSee($tokens['pending']);
         $response->assertSee($tokens['approved']);
-        
-        // Check for different status text
         $response->assertSee('Pending');
         $response->assertSee('Confirmed');
+
+        // Check past tab for declined
+        $response = $this
+            ->actingAs($student)
+            ->get('/student/my-appointments?tab=past');
+
+        $response->assertOk();
         $response->assertSee('Declined');
     }
 
