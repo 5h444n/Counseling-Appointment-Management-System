@@ -120,6 +120,7 @@ Route::middleware(['auth', 'advisor', 'throttle:60,1'])->group(function () {
     // Manage Slots (Create/Delete)
     Route::get('/advisor/slots', [AdvisorSlotController::class, 'index'])->name('advisor.slots');
     Route::post('/advisor/slots', [AdvisorSlotController::class, 'store'])->middleware('throttle:20,1')->name('advisor.slots.store');
+    Route::delete('/advisor/slots/bulk', [AdvisorSlotController::class, 'bulkDestroy'])->name('advisor.slots.bulk_destroy');
     Route::delete('/advisor/slots/{slot}', [AdvisorSlotController::class, 'destroy'])->name('advisor.slots.destroy');
 
     // --- Task #9: Request Handling (NEW) ---

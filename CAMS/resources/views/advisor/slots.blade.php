@@ -33,7 +33,7 @@
                             @csrf
 
                             <div>
-                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-xs text-gray-400 font-normal">(Start Date if recurring)</span></label>
                                 <input type="date" id="date" name="date" required min="{{ date('Y-m-d') }}" value="{{ old('date') }}"
                                        class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm @error('date') border-red-500 @enderror">
                                 <x-input-error :messages="$errors->get('date')" class="mt-2" />
@@ -65,6 +65,38 @@
                                 <x-input-error :messages="$errors->get('duration')" class="mt-2" />
                             </div>
 
+                            <div x-data="{ isRecurring: false }" class="space-y-3 pt-2 border-t border-gray-100">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="is_recurring" name="is_recurring" value="1" x-model="isRecurring"
+                                           class="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                    <label for="is_recurring" class="ml-2 block text-sm text-gray-700">Repeat Weekly</label>
+                                </div>
+
+                                <div x-show="isRecurring" x-transition class="pl-6 space-y-4">
+                                    <div>
+                                        <label for="recurrence_weeks" class="block text-sm font-medium text-gray-700 mb-1">For how many weeks?</label>
+                                        <input type="number" id="recurrence_weeks" name="recurrence_weeks" min="1" max="12" value="4"
+                                               class="w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 shadow-sm text-sm">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Repeats on days</label>
+                                        <div class="flex flex-wrap gap-3">
+                                            @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $index => $day)
+                                                <label class="inline-flex items-center">
+                                                    <input type="checkbox" name="days[]" value="{{ $index }}" 
+                                                           class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                                           {{ $index == 1 ? 'checked' : '' }}> {{-- Default Mon --}}
+                                                    <span class="ml-2 text-sm text-gray-600">{{ $day }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-gray-500">Creates slots for the selected days over the specified weeks.</p>
+                                </div>
+                            </div>
+
                             <button type="submit" class="w-full bg-slate-900 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg transition-colors shadow-lg shadow-orange-900/20">
                                 Generate Slots
                             </button>
@@ -74,67 +106,101 @@
             </div>
 
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h2 class="font-semibold text-gray-800">Your Upcoming Slots</h2>
-                        <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">{{ $slots->count() }} Slots</span>
-                    </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ selected: [], allSelected: false }">
+                    <form action="{{ route('advisor.slots.bulk_destroy') }}" method="POST" id="bulk-delete-form">
+                        @csrf
+                        @method('DELETE')
+                        
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <div class="flex items-center space-x-4">
+                                <h2 class="font-semibold text-gray-800">Your Upcoming Slots</h2>
+                                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">{{ $slots->count() }} Slots</span>
+                            </div>
+                            
+                            <button type="submit" 
+                                    x-show="selected.length > 0" 
+                                    x-transition
+                                    class="text-xs font-medium bg-red-100 text-red-700 px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors"
+                                    onclick="return confirm('Are you sure you want to delete the selected slots?')">
+                                Delete Selected (<span x-text="selected.length"></span>)
+                            </button>
+                        </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                            </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($slots as $slot)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $slot->start_time->format('M d, Y') }}</div>
-                                        <div class="text-sm text-gray-500">{{ $slot->start_time->format('h:i A') }} - {{ $slot->end_time->format('h:i A') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($slot->status === 'active')
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Open
-                                            </span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                Booked
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        @if($slot->status === 'active')
-                                            <form action="{{ route('advisor.slots.destroy', $slot->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        aria-label="Delete slot for {{ $slot->start_time->format('M d, Y h:i A') }}"
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">
+                                        <input type="checkbox" 
+                                               class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                               @change="allSelected = $el.checked; selected = allSelected ? {{ $slots->pluck('id') }} : []">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($slots as $slot)
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($slot->status === 'active')
+                                                <input type="checkbox" name="slots[]" value="{{ $slot->id }}" 
+                                                       x-model="selected"
+                                                       class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                                            @else
+                                                <input type="checkbox" disabled class="rounded border-gray-100 text-gray-300 cursor-not-allowed">
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ $slot->start_time->format('M d, Y') }}</div>
+                                            <div class="text-sm text-gray-500">{{ $slot->start_time->format('h:i A') }} - {{ $slot->end_time->format('h:i A') }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($slot->status === 'active')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Open
+                                                </span>
+                                            @else
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    Booked
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            @if($slot->status === 'active')
+                                                <button type="submit" form="delete-single-{{ $slot->id }}"
                                                         class="text-red-500 hover:text-red-700 font-medium"
                                                         onclick="return confirm('Delete this slot?')">Delete</button>
-                                            </form>
-                                        @else
-                                            <span class="text-gray-400 cursor-not-allowed">Locked</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="px-6 py-10 text-center text-gray-400">
-                                        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <p class="mt-2 text-sm">No slots created yet. Use the form to add availability.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                            @else
+                                                <span class="text-gray-400 cursor-not-allowed">Locked</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-10 text-center text-gray-400">
+                                            <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <p class="mt-2 text-sm">No slots created yet. Use the form to add availability.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    
+                    {{-- Separate forms for single delete to avoid nesting --}}
+                    @foreach($slots as $slot)
+                        @if($slot->status === 'active')
+                            <form id="delete-single-{{ $slot->id }}" action="{{ route('advisor.slots.destroy', $slot->id) }}" method="POST" class="hidden">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+                        @endif
+                    @endforeach
                 </div>
             </div>
         </div>

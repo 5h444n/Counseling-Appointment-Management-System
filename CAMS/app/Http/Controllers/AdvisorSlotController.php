@@ -31,8 +31,6 @@ class AdvisorSlotController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validate Input
-        // Note: 'after_or_equal:today' uses the server's configured timezone (UTC by default)
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required|date_format:H:i',
@@ -42,79 +40,103 @@ class AdvisorSlotController extends Controller
                 }
             }],
             'duration' => 'required|integer|in:20,30,45,60',
+            'is_recurring' => 'nullable|boolean',
+            'recurrence_weeks' => 'nullable|integer|min:1|max:12',
+            'days' => 'nullable|array', // Array of day indices (0=Sun, 1=Mon, etc.)
+            'days.*' => 'integer|min:0|max:6',
         ]);
 
         $advisorId = Auth::id();
-        $date = $request->date;
-
+        $baseDate = Carbon::parse($request->date);
         $duration = (int) $request->duration;
+        $isRecurring = $request->boolean('is_recurring');
+        $weeks = $isRecurring ? (int) $request->recurrence_weeks : 0; // 0 weeks means just the single day
+        $selectedDays = $request->input('days', []); // If empty, defaults to just the day of 'date' if recurring is off, or we need to handle "Recurring but no days selected" (default to base day)
 
-        // 2. Parse Times
+        // If recurring but no days selected, default to the day of the start date
+        if ($isRecurring && empty($selectedDays)) {
+            $selectedDays = [$baseDate->dayOfWeek];
+        }
+
+        // 2. Parse Times to get the time component
         try {
-            $start = Carbon::parse("$date {$request->start_time}");
-            $end = Carbon::parse("$date {$request->end_time}");
+            // We use these just to extract the time part
+            $timeStart = Carbon::parse($request->start_time);
+            $timeEnd = Carbon::parse($request->end_time);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Invalid date or time format provided.');
+            return redirect()->back()->with('error', 'Invalid time format.');
         }
 
-        // Validate that the start time is in the future
-        if ($start->isPast()) {
-            return redirect()->back()->with('error', 'Cannot create slots in the past.');
-        }
+        // Calculate the range of dates to process
+        $startDate = $baseDate->copy();
+        $endDate = $isRecurring ? $baseDate->copy()->addWeeks($weeks) : $baseDate->copy(); // If not recurring, end date is same as start
 
-        // Validate that the time range is sufficient for at least one slot
-        $totalMinutes = $start->diffInMinutes($end);
-        if ($totalMinutes < $duration) {
-            return redirect()->back()->with('error', "The time range must be at least {$duration} minutes for the selected duration.");
-        }
+        $totalCreated = 0;
+        $currentDate = $startDate->copy();
 
-        $count = 0;
-
-        // 3. Fetch all existing overlapping slots once before the loop
-        $existingSlots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->where('status', 'active')
-            ->where('start_time', '<', $end)
-            ->where('end_time', '>', $start)
-            ->get();
-
-        // 4. Loop: Create slots until we hit the end time
-        while ($start->copy()->addMinutes($duration)->lte($end)) {
-
-            $slotEnd = $start->copy()->addMinutes($duration);
-
-            // Check for overlapping or duplicate slots in memory
-            $overlap = $existingSlots->first(function($slot) use ($start, $slotEnd) {
-                return $slot->start_time < $slotEnd && $slot->end_time > $start;
-            });
-
-            if (!$overlap) {
-                AppointmentSlot::create([
-                    'advisor_id' => $advisorId,
-                    'start_time' => $start->copy(),
-                    'end_time' => $slotEnd,
-                    'status' => 'active',
-                    'is_recurring' => false,
-                ]);
-                $count++;
+        // Loop through every day from start to end
+        while ($currentDate->lte($endDate)) {
+            
+            // Should we generate slots for this day?
+            // If not recurring, only process the specific start date.
+            // If recurring, check if current day is in selectedDays.
+            $processDay = false;
+            
+            if (!$isRecurring) {
+                if ($currentDate->isSameDay($baseDate)) {
+                    $processDay = true;
+                }
+            } else {
+                if (in_array($currentDate->dayOfWeek, $selectedDays)) {
+                    $processDay = true;
+                }
             }
 
-            // Move the start time forward
-            $start->addMinutes($duration);
+            if ($processDay) {
+                // Construct start and end times for this specific date
+                $slotStart = $currentDate->copy()->setTime($timeStart->hour, $timeStart->minute);
+                $dayEndTime = $currentDate->copy()->setTime($timeEnd->hour, $timeEnd->minute);
+
+                // Validation: Don't create slots in the past
+                if ($slotStart->isFuture()) {
+                    
+                    // Generate slots for the day
+                    while ($slotStart->copy()->addMinutes($duration)->lte($dayEndTime)) {
+                        $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+                        // Check intersection
+                        $exists = AppointmentSlot::where('advisor_id', $advisorId)
+                            ->where('status', 'active')
+                            ->where(function ($query) use ($slotStart, $slotEnd) {
+                                $query->where('start_time', '<', $slotEnd)
+                                      ->where('end_time', '>', $slotStart);
+                            })
+                            ->exists();
+
+                        if (!$exists) {
+                            AppointmentSlot::create([
+                                'advisor_id' => $advisorId,
+                                'start_time' => $slotStart->copy(),
+                                'end_time' => $slotEnd,
+                                'status' => 'active',
+                                'is_recurring' => false,
+                            ]);
+                            $totalCreated++;
+                        }
+
+                        $slotStart->addMinutes($duration);
+                    }
+                }
+            }
+
+            $currentDate->addDay();
         }
 
-        if ($count === 0) {
-            return redirect()->back()->with('error', "No slots could be generated. All slots in this time range already exist.");
+        if ($totalCreated === 0) {
+            return redirect()->back()->with('warning', "No new slots were created. Slots may already exist or dates are in the past.");
         }
 
-        // Log successful slot creation
-        Log::info('Appointment slots created', [
-            'advisor_id' => $advisorId,
-            'date' => $date,
-            'count' => $count,
-            'duration' => $duration,
-        ]);
-
-        return redirect()->back()->with('success', "Successfully generated {$count} slot(s) for {$date}.");
+        return redirect()->back()->with('success', "Successfully generated {$totalCreated} slot(s).");
     }
 
     /**
@@ -136,13 +158,33 @@ class AdvisorSlotController extends Controller
 
         $slot->delete();
 
-        // Log slot deletion
-        Log::info('Appointment slot deleted', [
-            'advisor_id' => Auth::id(),
-            'slot_id' => $id,
-            'start_time' => $slot->start_time,
+        return redirect()->back()->with('success', 'Slot removed successfully.');
+    }
+
+    /**
+     * Delete multiple slots.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'slots' => 'required|array',
+            'slots.*' => 'exists:appointment_slots,id',
         ]);
 
-        return redirect()->back()->with('success', 'Slot removed successfully.');
+        $count = 0;
+        foreach ($request->slots as $id) {
+            $slot = AppointmentSlot::where('advisor_id', Auth::id())->find($id);
+            
+            if ($slot && $slot->status === 'active' && !$slot->appointment()->exists()) {
+                $slot->delete();
+                $count++;
+            }
+        }
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', 'No valid slots could be deleted. They might be booked or already removed.');
+        }
+
+        return redirect()->back()->with('success', "{$count} slots removed successfully.");
     }
 }
