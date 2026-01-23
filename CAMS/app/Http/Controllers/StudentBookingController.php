@@ -169,6 +169,13 @@ class StudentBookingController extends Controller
                 $appointment->token
             );
 
+            // Notify the advisor
+            try {
+                $appointment->slot->advisor->notify(new \App\Notifications\NewAppointmentRequest($appointment));
+            } catch (\Exception $e) {
+                Log::error('Notification Failed: ' . $e->getMessage());
+            }
+
             return redirect()->route('dashboard')->with('success', 'Appointment booked successfully! Wait for approval.');
 
         } catch (\Exception $e) {

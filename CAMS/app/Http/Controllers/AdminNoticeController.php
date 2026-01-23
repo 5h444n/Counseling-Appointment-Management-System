@@ -51,6 +51,27 @@ class AdminNoticeController extends Controller
             'user_id' => $request->user_role === 'specific' ? $request->user_id : null,
         ]);
 
+        // Send Notifications
+        try {
+            $usersToNotify = collect();
+
+            if ($request->user_role === 'all') {
+                $usersToNotify = \App\Models\User::whereIn('role', ['student', 'advisor'])->get();
+            } elseif ($request->user_role === 'specific' && $request->user_id) {
+                $usersToNotify = \App\Models\User::where('id', $request->user_id)->get();
+            } else {
+                // Specific role (student/advisor)
+                $usersToNotify = \App\Models\User::where('role', $request->user_role)->get();
+            }
+
+            foreach ($usersToNotify as $user) {
+                $user->notify(new \App\Notifications\SystemNotice($notice));
+            }
+        } catch (\Exception $e) {
+            // Log but don't fail the request
+            \Illuminate\Support\Facades\Log::error('Notice Notification Failed: ' . $e->getMessage());
+        }
+
         return redirect()->route('admin.notices.index')
             ->with('success', 'Notice sent successfully.');
     }
