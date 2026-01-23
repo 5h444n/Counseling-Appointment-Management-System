@@ -108,6 +108,15 @@ class StudentBookingController extends Controller
                     throw new \Exception('You have already booked this slot (Check your Pending/Approved list).');
                 }
 
+                // Check for max pending requests (Spam Prevention)
+                $pendingCount = Appointment::where('student_id', Auth::id())
+                    ->where('status', 'pending')
+                    ->count();
+
+                if ($pendingCount >= 5) {
+                    throw new \Exception('You cannot have more than 5 pending appointment requests at a time.');
+                }
+
                 // 5. Generate a Unique Token
                 $deptCode = optional(Auth::user()->department)->code ?? 'GEN';
                 $userId = Auth::id();
