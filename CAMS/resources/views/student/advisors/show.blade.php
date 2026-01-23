@@ -132,8 +132,8 @@
                               if (bytes === 0) return '0 Bytes';
                               const k = 1024;
                               const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                              const i = Math.floor(Math.log(bytes) / Math.log(k));
-                              return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                              const i = Math.max(0, Math.floor(Math.log(bytes) / Math.log(k)));
+                              return parseFloat((bytes / Math.pow(k, i)).toFixed(2)).toFixed(2).replace(/\.00$/, '') + ' ' + sizes[i];
                           }
                       }"
                       @submit="if(!fileError && fileSize <= maxSize) { submitting = true; } else { $event.preventDefault(); }">
