@@ -184,11 +184,6 @@ Route::middleware(['auth', 'admin', 'throttle:60,1'])->group(function () {
     Route::get('/admin/resources', [\App\Http\Controllers\ResourceController::class, 'index'])->name('admin.resources.index');
     Route::post('/admin/resources', [\App\Http\Controllers\ResourceController::class, 'store'])->name('admin.resources.store');
     Route::delete('/admin/resources/{resource}', [\App\Http\Controllers\ResourceController::class, 'destroy'])->name('admin.resources.destroy');
-
-    // Notifications
-    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 });
 
 require __DIR__.'/auth.php';
