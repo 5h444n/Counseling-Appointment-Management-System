@@ -98,6 +98,9 @@
                                 </div>
                             @else
                                 <p class="text-gray-500 text-sm italic">No previous session notes found for this student.</p>
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-slate-900 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                                    Save Notes
+                                </button>
                             @endif
                         </div>
                     </div>
