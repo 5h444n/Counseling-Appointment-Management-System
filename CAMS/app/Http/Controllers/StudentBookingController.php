@@ -108,6 +108,15 @@ class StudentBookingController extends Controller
                     throw new \Exception('You have already booked this slot (Check your Pending/Approved list).');
                 }
 
+                // Check for max pending requests (Spam Prevention)
+                $pendingCount = Appointment::where('student_id', Auth::id())
+                    ->where('status', 'pending')
+                    ->count();
+
+                if ($pendingCount >= 5) {
+                    throw new \Exception('You cannot have more than 5 pending appointment requests at a time.');
+                }
+
                 // 5. Generate a Unique Token
                 $deptCode = optional(Auth::user()->department)->code ?? 'GEN';
                 $userId = Auth::id();
@@ -207,6 +216,15 @@ class StudentBookingController extends Controller
             return back()->with('error', 'You are already on the waitlist for this slot.');
         }
 
+        // Check if the student is the one who actually booked it (should not waitlist yourself)
+        $isBooker = Appointment::where('slot_id', $slotId)
+            ->where('student_id', $user->id)
+            ->exists();
+
+        if ($isBooker) {
+            return back()->with('error', 'You have already booked this slot.');
+        }
+
         // Add to waitlist
         Waitlist::create([
             'slot_id' => $slotId,
@@ -281,11 +299,6 @@ class StudentBookingController extends Controller
                 // Only allow cancellation for pending or approved appointments
                 if (!in_array($appointment->status, ['pending', 'approved'])) {
                     throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
-                }
-
-                // Prevent cancelling past appointments
-                if ($slot->start_time <= now()) {
-                    throw new \RuntimeException('Cannot cancel an appointment that has already started.');
                 }
 
                 // 1. Update appointment status to cancelled

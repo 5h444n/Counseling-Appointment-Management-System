@@ -140,7 +140,7 @@
                                 @endif
 
                                 {{-- Cancel Button for Upcoming appointments --}}
-                                @if($tab === 'upcoming' && in_array($app->status, ['pending', 'approved']) && $app->slot->start_time > now())
+                                @if($tab === 'upcoming' && in_array($app->status, ['pending', 'approved']))
                                     <div x-data="{ showConfirm: false }" class="inline-block">
                                         <button @click="showConfirm = true" 
                                                 class="text-red-600 hover:text-red-900 text-xs font-medium">
