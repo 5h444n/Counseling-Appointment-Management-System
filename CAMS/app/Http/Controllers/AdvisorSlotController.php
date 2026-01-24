@@ -19,7 +19,7 @@ class AdvisorSlotController extends Controller
         $slots = AppointmentSlot::where('advisor_id', Auth::id())
             ->where('start_time', '>=', now()) // Only show future slots
             ->orderBy('start_time', 'asc')
-            ->get();
+            ->paginate(20); // Pagination added for performance
 
         return view('advisor.slots', compact('slots'));
     }

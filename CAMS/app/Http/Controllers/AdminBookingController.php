@@ -53,36 +53,45 @@ class AdminBookingController extends Controller
             'purpose' => 'required|string|max:255',
         ]);
 
-        $slot = AppointmentSlot::findOrFail($request->slot_id);
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+                $slot = AppointmentSlot::where('id', $request->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        if ($slot->status !== 'active') { // Fixed: check 'active'
-            return back()->with('error', 'This slot is no longer available.');
+                if ($slot->status !== 'active') {
+                    throw new \Exception('This slot is no longer available.');
+                }
+
+                // Generate Standard Token
+                $token = 'GEN-' . $request->student_id . '-' . strtoupper(Str::random(4));
+
+                // Create Appointment
+                Appointment::create([
+                    'student_id' => $request->student_id,
+                    'slot_id' => $slot->id,
+                    'token' => $token,
+                    'purpose' => $request->purpose,
+                    'status' => 'approved', 
+                ]);
+
+                // Update Slot Status
+                $slot->update(['status' => 'blocked']);
+
+                // Log Activity
+                \App\Services\ActivityLogger::logBooking(
+                    'Admin', // Actor
+                    $slot->advisor->name, // Advisor
+                    $token
+                );
+            });
+
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Appointment booked successfully on behalf of student.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // Generate Standard Token
-        $token = 'GEN-' . $request->student_id . '-' . strtoupper(Str::random(4));
-
-        // Create Appointment
-        $appointment = Appointment::create([
-            'student_id' => $request->student_id,
-            'slot_id' => $slot->id,
-            'token' => $token,
-            'purpose' => $request->purpose,
-            'status' => 'approved', 
-        ]);
-
-        // Update Slot Status
-        $slot->update(['status' => 'blocked']);
-
-        // Log Activity
-        \App\Services\ActivityLogger::logBooking(
-            'Admin', // Actor
-            $slot->advisor->name, // Advisor
-            $token
-        );
-
-        return redirect()->route('admin.dashboard')
-            ->with('success', 'Appointment booked successfully on behalf of student.');
     }
 
     /**
