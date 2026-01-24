@@ -128,7 +128,7 @@
 
                                                         <div class="flex justify-end">
                                                             <button type="button" @click="showRating = false" class="mr-3 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                                                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Submit Feedback</button>
+                                                            <button type="submit" class="px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-orange-600 transition-colors">Submit Feedback</button>
                                                         </div>
                                                     </form>
                                                 </div>

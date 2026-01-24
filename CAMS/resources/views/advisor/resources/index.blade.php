@@ -55,7 +55,7 @@
                             <input type="file" name="file" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
 
-                        <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium transition-colors">
+                        <button type="submit" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-orange-600 text-sm font-medium transition-colors">
                             Upload File
                         </button>
                     </form>

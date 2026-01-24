@@ -35,6 +35,9 @@
                         }
                     }" 
                     x-show="show" 
+                    x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100 transform scale-100"
+                    x-transition:leave-end="opacity-0 transform scale-90"
                     class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r shadow-sm relative">
                     <div class="flex items-start justify-between">
                         <div class="flex">
