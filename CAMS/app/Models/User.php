@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-// use Laravel\Sanctum\HasApiTokens; <--- REMOVED THIS LINE
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    // use HasApiTokens, HasFactory, Notifiable; <--- REMOVED HasApiTokens FROM HERE
     use HasFactory, Notifiable;
 
     /**
