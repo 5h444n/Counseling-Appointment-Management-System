@@ -121,6 +121,14 @@ class AdminStudentController extends Controller
     {
         $student = User::where('role', 'student')->findOrFail($id);
         
+        // Log the deletion
+        \Illuminate\Support\Facades\Log::info('Admin deleted student', [
+            'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+            'student_id' => $student->id,
+            'student_email' => $student->email,
+            'student_name' => $student->name
+        ]);
+        
         // Optional: Check for existing appointments and delete them or prevent deletion
         // For now, we'll allow deletion which might cascade if set up, or throw error if restricted.
         // Assuming cascade or we just delete the user.

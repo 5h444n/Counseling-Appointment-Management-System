@@ -133,7 +133,7 @@ class AdvisorSlotController extends Controller
         }
 
         if ($totalCreated === 0) {
-            return redirect()->back()->with('warning', "No new slots were created. Slots may already exist or dates are in the past.");
+            return redirect()->back()->with('error', "No new slots were created. The time range may be too short for the selected duration, or slots already exist for this time.");
         }
 
         return redirect()->back()->with('success', "Successfully generated {$totalCreated} slot(s).");

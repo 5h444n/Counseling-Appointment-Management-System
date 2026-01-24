@@ -236,7 +236,7 @@ class DashboardTest extends TestCase
     }
 
     /**
-     * Test admins can access dashboard.
+     * Test admins can access dashboard (they get redirected to admin dashboard).
      */
     public function test_admins_can_access_dashboard(): void
     {
@@ -246,7 +246,8 @@ class DashboardTest extends TestCase
             ->actingAs($admin)
             ->get('/dashboard');
 
-        $response->assertOk();
+        // Admins are redirected to their specialized dashboard
+        $response->assertRedirect('/admin/dashboard');
     }
 
     /**

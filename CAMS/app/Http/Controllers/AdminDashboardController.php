@@ -53,7 +53,7 @@ class AdminDashboardController extends Controller
             
         $totalMinutes = $completedAppointments->sum(function($app) {
              if ($app->slot && $app->slot->start_time && $app->slot->end_time) {
-                 return $app->slot->end_time->diffInMinutes($app->slot->start_time);
+                 return $app->slot->start_time->diffInMinutes($app->slot->end_time);
              }
              return 0;
         });
@@ -110,14 +110,22 @@ class AdminDashboardController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->chunk(100, function ($appointments) use ($handle) {
                     foreach ($appointments as $app) {
+                        $studentName = $app->student->name ?? 'N/A';
+                        $advisorName = optional($app->slot)->advisor->name ?? 'N/A';
+                        $deptCode = optional(optional($app->slot)->advisor)->department->code ?? 'N/A';
+                        $slotDate = optional($app->slot)->start_time ? $app->slot->start_time->format('Y-m-d') : 'N/A';
+                        $slotTime = optional($app->slot)->start_time && optional($app->slot)->end_time 
+                            ? $app->slot->start_time->format('H:i') . ' - ' . $app->slot->end_time->format('H:i')
+                            : 'N/A';
+                        
                         fputcsv($handle, [
                             $app->id,
                             $app->token,
-                            $app->student->name ?? 'N/A',
-                            $app->slot->advisor->name ?? 'N/A',
-                            $app->slot->advisor->department->code ?? 'N/A',
-                            $app->slot->start_time->format('Y-m-d'),
-                            $app->slot->start_time->format('H:i') . ' - ' . $app->slot->end_time->format('H:i'),
+                            $studentName,
+                            $advisorName,
+                            $deptCode,
+                            $slotDate,
+                            $slotTime,
                             ucfirst($app->status),
                             $app->purpose,
                             $app->created_at->format('Y-m-d H:i:s'),

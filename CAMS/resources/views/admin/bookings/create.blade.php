@@ -85,7 +85,12 @@
                 if (advisorId) {
                     loadingMsg.classList.remove('hidden');
 
-                    fetch(`{{ route('admin.bookings.slots') }}?advisor_id=${advisorId}`)
+                    fetch(`{{ route('admin.bookings.slots') }}?advisor_id=${advisorId}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             loadingMsg.classList.add('hidden');
