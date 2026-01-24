@@ -156,6 +156,17 @@ class AdvisorSlotController extends Controller
             return redirect()->back()->with('error', 'Cannot delete a slot with an existing appointment.');
         }
 
+        // Notify Waitlist
+        $waitlistEntries = \App\Models\Waitlist::where('slot_id', $slot->id)->with('student')->get();
+        if ($waitlistEntries->isNotEmpty()) {
+            $info = $slot->start_time->format('M d, h:i A');
+            foreach ($waitlistEntries as $entry) {
+                if ($entry->student) {
+                    $entry->student->notify(new \App\Notifications\SlotCancelled($info));
+                }
+            }
+        }
+
         $slot->delete();
 
         return redirect()->back()->with('success', 'Slot removed successfully.');
@@ -176,6 +187,18 @@ class AdvisorSlotController extends Controller
             $slot = AppointmentSlot::where('advisor_id', Auth::id())->find($id);
             
             if ($slot && $slot->status === 'active' && !$slot->appointment()->exists()) {
+                
+                // Notify Waitlist
+                $waitlistEntries = \App\Models\Waitlist::where('slot_id', $slot->id)->with('student')->get();
+                if ($waitlistEntries->isNotEmpty()) {
+                    $info = $slot->start_time->format('M d, h:i A');
+                    foreach ($waitlistEntries as $entry) {
+                        if ($entry->student) {
+                            $entry->student->notify(new \App\Notifications\SlotCancelled($info));
+                        }
+                    }
+                }
+
                 $slot->delete();
                 $count++;
             }
