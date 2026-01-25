@@ -1,334 +1,209 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
   <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2+">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white" alt="Alpine.js">
   <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/Tests-194%20%2F%20201%20Passing-yellow?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-410%20Passing-success?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
 
 # 🎓 Counseling Appointment Management System (CAMS)
 
-**CAMS** is a comprehensive web-based appointment scheduling system designed specifically for universities and educational institutions. It streamlines the counseling and advisory appointment process between students and faculty advisors, enabling efficient booking, management, and tracking of counseling sessions.
+A comprehensive web-based appointment scheduling system designed for universities and educational institutions. CAMS streamlines the counseling and advisory appointment process between students and faculty advisors, enabling efficient booking, management, and tracking of counseling sessions.
 
-> ⚠️ **Important**: This system has 28 identified bugs (4 critical, 7 high priority). See [BUGS.md](BUGS.md) for complete details before deployment.
+> ✅ **Production Ready**: All critical and high-priority bugs have been fixed. See [BUGS.md](BUGS.md) for details.
 
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
-- [Project Status](#-project-status)
 - [Key Features](#-key-features)
-- [Known Issues](#-known-issues)
 - [Tech Stack](#-tech-stack)
-- [System Architecture](#-system-architecture)
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
-- [Environment Configuration](#-environment-configuration)
-- [Database Setup](#-database-setup)
+- [Configuration](#-configuration)
 - [Running the Application](#-running-the-application)
-- [User Roles & Permissions](#-user-roles--permissions)
-- [Feature Details](#-feature-details)
-- [Routes & Endpoints](#-routes--endpoints)
-- [Database Schema](#-database-schema)
-- [Default Credentials](#-default-credentials)
+- [User Roles & Access](#-user-roles--access)
 - [Testing](#-testing)
-- [Bug Reports](#-bug-reports)
 - [Deployment](#-deployment)
+- [Documentation](#-documentation)
 - [Contributing](#-contributing)
 - [License](#-license)
 
 ---
 
-## 📊 Project Status
-
-**Current Version:** 1.0.0-beta  
-**Status:** ⚠️ Beta - Not Production Ready  
-**Last Updated:** January 23, 2026
-
-### Implementation Status
-- ✅ **Student Features:** 90% Complete (cancellation feature pending)
-- ✅ **Advisor Features:** 95% Complete (all core features implemented)
-- ⚠️ **Admin Features:** 75% Complete (booking feature broken, see BUG-001)
-- ⚠️ **Testing:** 96.5% Pass Rate (7 failing tests)
-- 🔴 **Critical Bugs:** 4 identified (admin booking, error handling)
-
-### Documentation
-- ✅ [BUGS.md](BUGS.md) - Comprehensive bug report (28 bugs documented)
-- ✅ [PROJECT_STATUS_REPORT.md](PROJECT_STATUS_REPORT.md) - Detailed project status
-- ✅ [CAMS/TEST_REPORT.md](CAMS/TEST_REPORT.md) - Full test report
-- ✅ [CAMS/QA_SUMMARY.md](CAMS/QA_SUMMARY.md) - QA summary
-
----
-
-## ⚠️ Known Issues
-
-**Before using this system, please review:**
-
-### Critical Bugs (Must Fix Before Production)
-1. **Admin booking feature completely broken** - Uses wrong slot status values
-2. **Student cancellation returns 404** - Incorrect exception handling
-3. **Test failures due to session flash key mismatch** - Breaks 3 tests
-4. **Admin dashboard redirect issue** - Unexpected behavior
-
-### Security Issues
-- Missing authorization checks in advisor minute controller
-- Missing CSRF token in admin booking AJAX
-- File upload path traversal risk
-- Missing logging for critical actions
-
-### Performance Issues
-- N+1 query loading all appointments in admin dashboard
-- Missing pagination in admin user management
-- Duplicate slot locking in cancellation
-
-**Full Details:** See [BUGS.md](BUGS.md) for all 28 bugs with severity ratings and fix recommendations.
-
----
-
 ## 🎯 Overview
 
-CAMS (Counseling Appointment Management System) is built to address the challenges of managing counseling appointments in academic environments. The system provides:
+CAMS is built to streamline appointment scheduling in academic institutions. The system provides:
 
-- **For Students**: Easy discovery of advisors, real-time slot availability, seamless booking with purpose descriptions, and appointment tracking with digital tokens.
-- **For Advisors**: Flexible availability management, appointment request handling (approve/decline), and an organized dashboard for pending requests.
-- **For Administrators**: User management capabilities and system oversight (coming soon).
+- **For Students**: Browse advisors, book appointments in real-time, view appointment history, join waitlists, access resources, and submit feedback
+- **For Advisors**: Manage availability slots, approve/decline requests, record meeting minutes, upload resources, and track student interactions
+- **For Administrators**: Complete system oversight with user management, analytics dashboard, manual booking, system notices, and activity logs
 
-The system uses a modern TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire) architecture ensuring a responsive, fast, and intuitive user experience.
+Built with Laravel 12, Alpine.js, and Tailwind CSS for a modern, responsive, and intuitive user experience.
 
 ---
 
 ## ✨ Key Features
 
 ### 🎒 Student Features
-| Feature | Description |
-|---------|-------------|
-| **Advisor Discovery** | Search and filter advisors by name or department |
-| **Real-time Availability** | View all available time slots for any advisor |
-| **Smart Booking** | Book appointments with purpose description and optional file attachments |
-| **Digital Tokens** | Receive unique appointment tokens (e.g., CSE-123-A) |
-| **Appointment Tracking** | Track appointment status (Pending, Approved, Declined) |
-| **Appointment History** | View all past and upcoming appointments |
-| **Waitlist System** | Join waitlist for booked slots and get notified when they open up |
-| **Document Upload** | Attach optional documents (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG) up to 100MB |
+
+- **Advisor Discovery** - Browse available advisors with department and specialization information
+- **Real-time Booking** - View advisor availability and book appointments instantly
+- **Appointment Management** - Track appointment status, view history, and manage upcoming sessions
+- **Waitlist System** - Join waitlists for fully booked slots with automatic notifications
+- **Appointment Cancellation** - Cancel appointments with automatic slot release
+- **Resource Library** - Access educational materials shared by advisors
+- **Feedback System** - Submit ratings and feedback for completed appointments
+- **Personal Calendar** - Manage personal events and view all appointments
+- **Notifications** - Real-time updates on appointment status changes
 
 ### 👨‍🏫 Advisor Features
-| Feature | Description |
-|---------|-------------|
-| **Availability Management** | Create flexible time slots with customizable durations (20/30/45/60 min) |
-| **Bulk Slot Generation** | Auto-split time ranges into individual slots |
-| **Request Dashboard** | View all pending appointment requests |
-| **Accept/Decline Actions** | Approve or decline student requests with one click |
-| **Slot Protection** | Prevent double-booking with database-level locks |
-| **Schedule View** | View upcoming and past appointments in chronological order |
-| **Meeting Minutes** | Add session notes after completing appointments |
 
-### 🔐 Authentication & Security
-| Feature | Description |
-|---------|-------------|
-| **Laravel Breeze** | Complete authentication scaffolding |
-| **Role-based Access** | Student, Advisor, and Admin roles with middleware protection |
-| **Email Verification** | Email verification routes available (optional integration) |
-| **Password Reset** | Secure password reset via email |
-| **CSRF Protection** | Built-in Laravel CSRF protection |
-| **SQL Injection Prevention** | Eloquent ORM with parameterized queries |
-| **Rate Limiting** | API throttling (60/min general, 10/min booking, 20/min slot creation) |
-| **Event-Driven Notifications** | Asynchronous waitlist notifications with queue support |
+- **Availability Management** - Create, edit, and delete appointment slots with flexible scheduling
+- **Bulk Operations** - Create multiple slots at once for efficiency
+- **Request Handling** - Review and approve/decline student appointment requests
+- **Meeting Minutes** - Record and store meeting notes after each appointment
+- **Document Management** - Upload resources and materials for student access
+- **Student History** - View complete interaction history with students
+- **Schedule Overview** - Comprehensive view of all appointments (past, present, future)
+- **Calendar Integration** - Personal calendar for managing events
 
-### 🎨 User Experience
-| Feature | Description |
-|---------|-------------|
-| **Responsive Design** | Fully responsive UI works on mobile, tablet, and desktop |
-| **Dark Sidebar** | Modern slate-900 sidebar with orange accent colors |
-| **Interactive Modals** | Alpine.js powered modals for smooth interactions |
-| **Flash Messages** | Success and error notifications |
-| **Loading States** | Visual feedback during form submissions |
+### 🔧 Admin Features
+
+- **Analytics Dashboard** - System-wide statistics (top advisors, counseling hours, appointment trends)
+- **User Management** - Faculty/advisor and student management (CRUD operations)
+- **Manual Booking** - Create appointments on behalf of users
+- **System Notices** - Create and manage announcements for specific user roles
+- **Activity Logs** - Comprehensive audit trail with timestamps
+- **Resource Management** - Centralized resource library
+- **Data Export** - Export appointment data for reporting
+
+### 🔐 Security & Quality
+
+- **Role-Based Access Control** - Three distinct roles with specific permissions
+- **Email Verification** - Required for all new accounts
+- **Activity Logging** - All critical actions tracked
+- **Rate Limiting** - Protection against abuse
+- **Comprehensive Testing** - 410 passing tests with PHPUnit
+- **File Security** - Document access restricted to authorized users
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **PHP** | 8.2+ | Server-side programming language |
-| **Laravel** | 12.x | PHP web application framework |
-| **Laravel Breeze** | 2.x | Authentication scaffolding |
-| **Laravel Tinker** | 2.x | REPL for Laravel |
-| **PHPUnit** | 11.x | Testing framework |
+- **PHP** 8.2+ - Server-side language
+- **Laravel** 12.x - Web application framework
+- **Laravel Breeze** 2.x - Authentication scaffolding
+- **PHPUnit** 11.x - Testing framework
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Tailwind CSS** | 4.x | Utility-first CSS framework |
-| **Alpine.js** | 3.x | Lightweight JavaScript framework |
-| **Vite** | 7.x | Build tool and dev server |
-| **Axios** | 1.x | HTTP client for API requests |
+- **Tailwind CSS** 3.x - Utility-first CSS framework
+- **Alpine.js** 3.x - Lightweight JavaScript framework
+- **Vite** 7.x - Build tool and dev server
+- **Axios** 1.x - HTTP client
 
 ### Database
-| Technology | Purpose |
-|------------|---------|
-| **MySQL** | Primary database (recommended) |
-| **SQLite** | Alternative for development/testing |
-| **PostgreSQL** | Alternative supported database |
+- **MySQL** (recommended) or **SQLite** (development/testing)
 
 ### Development Tools
-| Tool | Purpose |
-|------|---------|
-| **Composer** | PHP dependency management |
-| **NPM** | JavaScript dependency management |
-| **Laravel Pint** | PHP code style fixer |
-| **Laravel Sail** | Docker development environment |
-
----
-
-## 🏗 System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         CAMS Architecture                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
-│  │   Student    │    │   Advisor    │    │    Admin     │       │
-│  │   Portal     │    │   Portal     │    │   Portal     │       │
-│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘       │
-│         │                   │                   │                │
-│         └───────────────────┼───────────────────┘                │
-│                             │                                    │
-│                   ┌─────────▼─────────┐                         │
-│                   │   Laravel Router  │                         │
-│                   │   + Middleware    │                         │
-│                   └─────────┬─────────┘                         │
-│                             │                                    │
-│         ┌───────────────────┼───────────────────┐               │
-│         │                   │                   │                │
-│  ┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────┐        │
-│  │  Student    │    │   Advisor     │   │   Profile   │        │
-│  │  Booking    │    │   Slot        │   │   Controller│        │
-│  │  Controller │    │   Controller  │   │             │        │
-│  └──────┬──────┘    └───────┬───────┘   └──────┬──────┘        │
-│         │                   │                   │                │
-│         └───────────────────┼───────────────────┘                │
-│                             │                                    │
-│                   ┌─────────▼─────────┐                         │
-│                   │   Eloquent ORM    │                         │
-│                   │      Models       │                         │
-│                   └─────────┬─────────┘                         │
-│                             │                                    │
-│                   ┌─────────▼─────────┐                         │
-│                   │   MySQL/SQLite    │                         │
-│                   │     Database      │                         │
-│                   └───────────────────┘                         │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+- **Composer** - PHP dependency management
+- **NPM** - JavaScript dependency management
+- **Laravel Pint** - PHP code style fixer
+- **Laravel Sail** - Docker development environment
 
 ---
 
 ## 📦 Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-| Requirement | Minimum Version | Check Command |
-|-------------|-----------------|---------------|
-| **PHP** | 8.2 or higher | `php -v` |
-| **Composer** | 2.x | `composer -V` |
-| **Node.js** | 18.x or higher | `node -v` |
-| **NPM** | 9.x or higher | `npm -v` |
-| **MySQL** | 8.x (or SQLite) | `mysql --version` |
-| **Git** | 2.x | `git --version` |
+- **PHP** >= 8.2
+- **Composer** >= 2.0
+- **Node.js** >= 18.x
+- **NPM** or **Yarn**
+- **MySQL** >= 8.0 (or SQLite for development)
 
 ### Required PHP Extensions
-- PHP PDO Extension
-- PHP MySQL Extension (if using MySQL)
-- PHP SQLite Extension (if using SQLite)
-- PHP Mbstring Extension
-- PHP OpenSSL Extension
-- PHP Tokenizer Extension
-- PHP XML Extension
-- PHP Ctype Extension
-- PHP JSON Extension
-- PHP BCMath Extension
+- BCMath
+- Ctype
+- cURL
+- DOM
+- Fileinfo
+- JSON
+- Mbstring
+- OpenSSL
+- PCRE
+- PDO
+- Tokenizer
+- XML
 
 ---
 
 ## 🚀 Installation
 
-### Step 1: Clone the Repository
+### Quick Setup (Recommended)
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/5h444n/Counseling-Appointment-Management-System.git
-cd Counseling-Appointment-Management-System
+cd Counseling-Appointment-Management-System/CAMS
+
+# 2. Run automated setup
+composer run setup
 ```
 
-### Step 2: Navigate to the Application Directory
+This single command will:
+- Install PHP dependencies
+- Install JavaScript dependencies
+- Create `.env` file from `.env.example`
+- Generate application key
+- Run database migrations
+- Build frontend assets
+
+### Manual Setup
+
+If you prefer step-by-step installation:
 
 ```bash
-cd CAMS
-```
+# 1. Clone the repository
+git clone https://github.com/5h444n/Counseling-Appointment-Management-System.git
+cd Counseling-Appointment-Management-System/CAMS
 
-### Step 3: Install PHP Dependencies
-
-```bash
+# 2. Install PHP dependencies
 composer install
-```
 
-### Step 4: Install JavaScript Dependencies
-
-```bash
+# 3. Install JavaScript dependencies
 npm install
-```
 
-### Step 5: Create Environment File
-
-```bash
+# 4. Create environment file
 cp .env.example .env
-```
 
-### Step 6: Generate Application Key
-
-```bash
+# 5. Generate application key
 php artisan key:generate
+
+# 6. Configure your database in .env (see Configuration section)
+
+# 7. Run migrations
+php artisan migrate
+
+# 8. (Optional) Seed sample data
+php artisan db:seed
+
+# 9. Build frontend assets
+npm run build
 ```
-
-### Quick Setup (Alternative)
-
-You can also use the composer setup script which automates most of these steps:
-
-```bash
-cd CAMS
-composer setup
-```
-
-This command will:
-1. Install Composer dependencies
-2. Create `.env` file from `.env.example`
-3. Generate application key
-4. Run database migrations
-5. Install NPM dependencies
-6. Build frontend assets
 
 ---
 
-## ⚙️ Environment Configuration
+## ⚙️ Configuration
 
-Edit the `.env` file in the `CAMS` directory to configure your environment:
+### Database Setup
 
-### Application Settings
+Edit your `.env` file with database credentials:
 
-```env
-APP_NAME=CAMS
-APP_ENV=local
-APP_KEY=base64:your-generated-key
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-```
-
-### Database Configuration (MySQL)
-
+**For MySQL:**
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -338,88 +213,45 @@ DB_USERNAME=root
 DB_PASSWORD=your_password
 ```
 
-### Database Configuration (SQLite Alternative)
-
+**For SQLite (Development):**
 ```env
 DB_CONNECTION=sqlite
-# Create the database file: touch database/database.sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
+```
+
+Then create the database:
+```bash
+# MySQL
+mysql -u root -p
+CREATE DATABASE cams_db;
+exit;
+
+# SQLite
+touch database/database.sqlite
+```
+
+### Application Settings
+
+```env
+APP_NAME="CAMS"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+APP_TIMEZONE=UTC
 ```
 
 ### Mail Configuration (Optional)
 
+For email notifications:
 ```env
 MAIL_MAILER=smtp
-MAIL_HOST=mailpit
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=null
-MAIL_FROM_ADDRESS="noreply@cams.edu"
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@cams.edu
 MAIL_FROM_NAME="${APP_NAME}"
-```
-
-### Cache & Session
-
-```env
-CACHE_STORE=database
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-QUEUE_CONNECTION=sync
-```
-
----
-
-## 🗄 Database Setup
-
-### Step 1: Create the Database
-
-For MySQL:
-```sql
-CREATE DATABASE cams_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-For SQLite:
-```bash
-touch database/database.sqlite
-```
-
-### Step 2: Run Migrations
-
-```bash
-php artisan migrate
-```
-
-This will create the following tables:
-- `users` - User accounts with roles
-- `departments` - Academic departments
-- `appointment_slots` - Advisor availability slots
-- `appointments` - Student appointment bookings
-- `appointment_documents` - File attachments
-- `waitlists` - Slot waitlist entries
-- `cache` - Application cache
-- `jobs` - Queue jobs
-
-### Step 3: Seed Sample Data (Optional)
-
-```bash
-php artisan db:seed
-```
-
-This creates:
-- 3 Departments (CSE, EEE, BBA)
-- 1 Admin user
-- 1 Test Student
-- 1 Test Advisor
-- 10 Random Advisors
-- 20 Random Students
-- Sample appointment slots
-
-### Step 4: Fresh Migration with Seeding
-
-To reset and reseed the database:
-
-```bash
-php artisan migrate:fresh --seed
 ```
 
 ---
@@ -428,737 +260,126 @@ php artisan migrate:fresh --seed
 
 ### Development Mode
 
-#### Option 1: Using Composer Dev Script (Recommended)
+Use the built-in development server with hot reloading:
 
 ```bash
-composer dev
+composer run dev
 ```
 
-This concurrently runs:
-- Laravel development server (`php artisan serve`)
-- Queue worker (`php artisan queue:listen`)
-- Laravel Pail logs (`php artisan pail`)
-- Vite dev server (`npm run dev`)
+This runs 4 concurrent processes:
+- Laravel development server (http://localhost:8000)
+- Queue worker for background jobs
+- Laravel Pail for log monitoring
+- Vite dev server for hot module replacement
 
-#### Option 2: Manual Start
-
-Terminal 1 - Laravel Server:
+**Alternative (separate terminals):**
 ```bash
+# Terminal 1: Start Laravel server
 php artisan serve
-```
 
-Terminal 2 - Vite (for hot-reloading):
-```bash
+# Terminal 2: Build assets with hot reload
 npm run dev
-```
 
-Terminal 3 - Queue Worker (for waitlist notifications):
-```bash
+# Terminal 3 (optional): Queue worker for notifications
 php artisan queue:listen
 ```
-
-> **Note**: The queue worker is optional for development but **required** for waitlist email notifications to function.
 
 ### Access the Application
 
 Open your browser and navigate to:
-```
-http://localhost:8000
-```
+- **Application**: http://localhost:8000
 
-### Production Build
+### Default Credentials
 
-Build optimized frontend assets:
+After running seeders, you can log in with:
 
-```bash
-npm run build
-```
+**Admin:**
+- Email: `admin@example.com`
+- Password: `password`
 
-### Queue Configuration for Production
+**Advisor:**
+- Email: `advisor@example.com`
+- Password: `password`
 
-For production, update `.env` to use a persistent queue driver:
+**Student:**
+- Email: `student@example.com`
+- Password: `password`
 
-```env
-QUEUE_CONNECTION=database  # or redis for better performance
-```
-
-Then run migrations to create queue tables:
-
-```bash
-php artisan queue:table
-php artisan migrate
-```
-
-Start the queue worker as a background service:
-
-```bash
-# Using supervisor or systemd recommended for production
-php artisan queue:work --daemon
-```
+> ⚠️ **Important**: Change these credentials in production!
 
 ---
 
-## 👥 User Roles & Permissions
-
-### Role Hierarchy
-
-| Role | Access Level | Description |
-|------|--------------|-------------|
-| **Admin** | Full | System administrator with complete access |
-| **Advisor** | Moderate | Faculty member who provides counseling |
-| **Student** | Basic | Student seeking counseling appointments |
-
-### Role-Specific Access
-
-#### 🎒 Student
-| Action | Allowed |
-|--------|---------|
-| View Dashboard | ✅ |
-| Update Profile | ✅ |
-| Search Advisors | ✅ |
-| View Advisor Slots | ✅ |
-| Book Appointments | ✅ |
-| View Own Appointments | ✅ |
-| Manage Slots | ❌ |
-| Approve Appointments | ❌ |
-
-#### 👨‍🏫 Advisor
-| Action | Allowed |
-|--------|---------|
-| View Dashboard | ✅ |
-| Update Profile | ✅ |
-| Create Time Slots | ✅ |
-| Delete Own Slots | ✅ |
-| View Appointment Requests | ✅ |
-| Approve/Decline Requests | ✅ |
-| Book Appointments | ❌ |
-
-#### 🔧 Admin
-| Action | Allowed |
-|--------|---------|
-| All Advisor Permissions | ✅ |
-| All Student Permissions | ✅ |
-| System Administration | ✅ (Coming Soon) |
-
----
-
-## 📝 Feature Details
-
-### 1. User Registration & Authentication
-
-The system uses **Laravel Breeze** for authentication, providing:
-
-- **Registration**: Users can register with name, email, password, and role selection
-- **Login**: Secure login with email and password
-- **Password Reset**: Email-based password reset functionality
-- **Email Verification**: Optional email verification support
-- **Remember Me**: Persistent login sessions
-
-### 2. Advisor Availability Management
-
-Advisors can create time slots using the **Slot Splitter** functionality:
-
-```
-Input:
-- Date: 2024-12-15
-- Start Time: 09:00
-- End Time: 12:00
-- Duration: 30 minutes
-
-Output:
-- 09:00 - 09:30
-- 09:30 - 10:00
-- 10:00 - 10:30
-- 10:30 - 11:00
-- 11:00 - 11:30
-- 11:30 - 12:00
-```
-
-**Features:**
-- Automatic slot splitting based on duration
-- Overlap detection prevents duplicate slots
-- Visual slot status (Open/Booked)
-- Easy slot deletion for unbooked slots
-
-### 3. Student Booking Process
-
-**Step 1: Find an Advisor**
-- Browse all advisors or filter by department
-- Search by advisor name
-- View advisor details and department
-
-**Step 2: Select a Time Slot**
-- View all available slots for selected advisor
-- Slots show date and time clearly
-- Green slots indicate availability
-
-**Step 3: Confirm Booking**
-- Modal popup for booking confirmation
-- Enter appointment purpose (required, minimum 10 characters)
-- Optionally attach a document (PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, PNG, GIF, BMP, SVG - Max 100MB)
-- Submit for advisor approval
-
-**Step 4: Receive Token**
-- Unique token generated (e.g., CSE-123-A)
-- Token format: `DEPT_CODE-USER_ID-SERIAL`
-- Token displayed in dashboard and appointments list
-
-**Alternative: Join Waitlist**
-- If slot is booked, students can join the waitlist
-- Receive email notification when slot becomes available
-- First-come-first-served notification system
-
-### 4. Appointment Token System
-
-The system generates unique appointment tokens:
-
-```
-Token Format: [DEPARTMENT_CODE]-[USER_ID]-[SERIAL_LETTER]
-Example: CSE-123-A
-
-Components:
-- CSE: Department code (e.g., Computer Science, or "GEN" if no department)
-- 123: Student's user ID
-- A: Random serial letter (A-Z)
-
-Token Generation:
-- Ensures uniqueness by checking existing tokens
-- Maximum 26 attempts (one per letter A-Z)
-- Automatic retry if token collision detected
-```
-
-### 5. Appointment Status Workflow
-
-```
-┌─────────────┐
-│   PENDING   │ ← Initial state after booking
-└──────┬──────┘
-       │
-       ▼
-  ┌────┴────┐
-  │         │
-  ▼         ▼
-┌─────┐  ┌──────┐
-│APPROVED│  │DECLINED│
-└────┬───┘  └────┬───┘
-     │           │
-     │           └─→ Slot becomes active, waitlist notified
-     ▼
-┌──────────┐
-│COMPLETED │ ← After advisor adds meeting notes
-└──────────┘
-
-Additional States (Database-ready):
-- CANCELLED: Student cancels before appointment (not yet implemented)
-- NO_SHOW: Student doesn't attend (requires manual marking)
-```
-
-### 6. Double-Booking Prevention
-
-The system uses database-level locking to prevent race conditions:
-
-```php
-DB::transaction(function () {
-    $slot = AppointmentSlot::where('id', $slotId)
-        ->lockForUpdate()  // Pessimistic locking
-        ->first();
-    
-    if ($slot->status !== 'active') {
-        throw new Exception('Slot no longer available');
-    }
-    
-    // Create appointment and mark slot as blocked
-});
-```
-
-### 7. Waitlist System
-
-The waitlist feature allows students to queue for blocked slots:
-
-**How It Works:**
-1. Student views a booked slot and clicks "Join Waitlist"
-2. System adds student to waitlist queue (FIFO - First In First Out)
-3. When advisor declines an appointment, the slot becomes available
-4. System automatically emails the first student in the waitlist
-5. Notified student can immediately book the newly available slot
-
-**Technical Implementation:**
-- Event-driven architecture using `SlotFreedUp` event
-- `NotifyWaitlist` listener handles email notifications
-- Database table ensures one entry per student per slot
-- Queue workers process notifications asynchronously
-
-**Features:**
-- Automatic email notifications via `SlotAvailableNotification` mailable
-- FIFO queue ordering based on `created_at` timestamp
-- Automatic removal from waitlist upon successful booking
-- Visual indicators showing waitlist status on slot cards
-
-### 8. Meeting Minutes (MOM) System
-
-Advisors can document counseling sessions:
-
-**Workflow:**
-1. After approving an appointment, advisor conducts the session
-2. Advisor accesses "Add Notes" from their schedule view
-3. System provides form to enter session details and recommendations
-4. Upon saving, appointment status changes to "completed"
-5. Meeting notes are stored and associated with the appointment
-
-**Features:**
-- Separate notes storage in `minutes` table
-- One-to-one relationship with appointments
-- Accessible from advisor schedule view
-- Helps maintain session history and follow-ups
-
-### 9. File Upload System
-
-Students can attach supporting documents when booking appointments:
-
-**Workflow:**
-1. When booking an appointment, students can optionally upload a file
-2. System validates file type and size
-3. File is securely stored in `storage/app/public/appointment_documents`
-4. File metadata saved in `appointment_documents` table
-5. Advisors can access uploaded documents when reviewing appointments
-
-**Features:**
-- Optional file upload during booking
-- Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG, GIF, BMP, SVG
-- Maximum file size: 100MB
-- Files associated with appointments via Eloquent relationships
-- Secure storage with validation
-
-**Validation:**
-- File type checking prevents malicious uploads
-- Size limit prevents server overload
-- Original filename preserved for reference
-
-### 10. Auto-Cancellation System
-
-Automated cleanup of stale appointments via Laravel scheduler:
-
-**Workflow:**
-1. Scheduled task runs every minute via `appointments:autocancel` command
-2. System checks for appointments meeting cancellation criteria
-3. Stale pending requests (>24 hours) are auto-cancelled
-4. Approved appointments with no-shows (>10 min past start) are marked
-5. Slots are automatically freed up for rebooking
-6. Email notifications sent to waitlisted students (if applicable)
-
-**Features:**
-- Auto-cancels pending appointments older than 24 hours
-- Marks approved appointments as "no-show" after 10-minute grace period
-- Frees up slots automatically when appointments are cancelled
-- Runs continuously via Laravel scheduler
-- Transaction-safe processing
-
-**Configuration:**
-```bash
-# Set up cron job in production
-* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
-
-# Manual execution
-php artisan appointments:autocancel
-```
-
----
-
-## 🛤 Routes & Endpoints
-
-### Public Routes
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| GET | `/` | Redirect to login |
-| GET | `/login` | Login page |
-| POST | `/login` | Process login |
-| GET | `/register` | Registration page |
-| POST | `/register` | Process registration |
-| GET | `/forgot-password` | Password reset request |
-| POST | `/forgot-password` | Send reset email |
-| GET | `/reset-password/{token}` | Reset password form |
-| POST | `/reset-password` | Process password reset |
-
-### Authenticated Routes (All Users)
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| GET | `/dashboard` | Main dashboard |
-| GET | `/profile` | Edit profile |
-| PATCH | `/profile` | Update profile |
-| DELETE | `/profile` | Delete account |
-| POST | `/logout` | Logout |
-
-### Student Routes
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| GET | `/student/advisors` | List all advisors |
-| GET | `/student/advisors/{id}` | View advisor slots |
-| POST | `/student/book` | Book an appointment |
-| GET | `/student/my-appointments` | View my appointments |
-| POST | `/waitlist/{slot_id}` | Join waitlist for a blocked slot |
-
-### Advisor Routes
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| GET | `/advisor/dashboard` | Pending requests |
-| GET | `/advisor/slots` | Manage availability |
-| POST | `/advisor/slots` | Create new slots |
-| DELETE | `/advisor/slots/{slot}` | Delete a slot |
-| PATCH | `/advisor/appointments/{id}` | Approve/Decline |
-| GET | `/advisor/schedule` | View all appointments (upcoming & past) |
-| GET | `/advisor/appointments/{id}/note` | Meeting notes form |
-| POST | `/advisor/appointments/{id}/note` | Save meeting notes |
-
-### Admin Routes (Coming Soon)
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| GET | `/admin/dashboard` | Admin dashboard |
-
----
-
-## 🗃 Database Schema
-
-### Users Table
-
-```sql
-CREATE TABLE users (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    role ENUM('student', 'advisor', 'admin') DEFAULT 'student',
-    university_id VARCHAR(255) UNIQUE,
-    department_id BIGINT UNSIGNED,
-    email_verified_at TIMESTAMP NULL,
-    password VARCHAR(255) NOT NULL,
-    remember_token VARCHAR(100),
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
-);
-```
-
-### Departments Table
-
-```sql
-CREATE TABLE departments (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    code VARCHAR(10) UNIQUE NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-```
-
-### Appointment Slots Table
-
-```sql
-CREATE TABLE appointment_slots (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    advisor_id BIGINT UNSIGNED NOT NULL,
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-    is_recurring BOOLEAN DEFAULT FALSE,
-    status ENUM('active', 'blocked') DEFAULT 'active',
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (advisor_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-### Appointments Table
-
-```sql
-CREATE TABLE appointments (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    student_id BIGINT UNSIGNED NOT NULL,
-    slot_id BIGINT UNSIGNED NOT NULL,
-    token VARCHAR(255) UNIQUE,
-    purpose TEXT NOT NULL,
-    status ENUM('pending', 'approved', 'declined', 'completed', 'no_show', 'cancelled') DEFAULT 'pending',
-    meeting_notes TEXT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (slot_id) REFERENCES appointment_slots(id) ON DELETE CASCADE
-);
-```
-
-### Appointment Documents Table
-
-```sql
-CREATE TABLE appointment_documents (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    appointment_id BIGINT UNSIGNED NOT NULL,
-    file_path VARCHAR(255) NOT NULL,
-    original_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
-);
-```
-
-### Waitlists Table
-
-```sql
-CREATE TABLE waitlists (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    slot_id BIGINT UNSIGNED NOT NULL,
-    student_id BIGINT UNSIGNED NOT NULL,
-    is_notified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (slot_id) REFERENCES appointment_slots(id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (slot_id, student_id)
-);
-```
-
-### Minutes Table (Meeting Notes)
-
-```sql
-CREATE TABLE minutes (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    appointment_id BIGINT UNSIGNED NOT NULL,
-    notes TEXT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
-    UNIQUE (appointment_id)
-);
-```
-
-### Entity Relationship Diagram
-
-```
-┌──────────────┐       ┌──────────────────┐       ┌──────────────┐
-│  Department  │──────<│       User       │>──────│AppointmentSlot│
-└──────────────┘   1:N └──────────────────┘ 1:N   └──────────────┘
-      │                       │                          │
-      │                       │1:N                       │1:1
-      │                       ▼                          ▼
-      │               ┌──────────────┐           ┌─────────────┐
-      │               │ Appointment  │>──────────│   Waitlist  │
-      │               └──────┬───────┘    1:N    └─────────────┘
-      │                      │
-      │                 ┌────┴────┐
-      │                 │1:1     1:N
-      │                 ▼         ▼
-      │           ┌─────────┐ ┌──────────────────┐
-      └───────────│ Minute  │ │AppointmentDocument│
-                  └─────────┘ └──────────────────┘
-```
-
----
-
-## 🔑 Default Credentials
-
-After running `php artisan db:seed`, you can use these test accounts:
-
-### Admin Account
-```
-Email: admin@uiu.ac.bd
-Password: password
-Role: Admin
-```
-
-### Student Account
-```
-Email: shaan@uiu.ac.bd
-Password: password
-Role: Student
-University ID: 011223001
-Department: CSE
-```
-
-### Advisor Account
-```
-Email: nabila@uiu.ac.bd
-Password: password
-Role: Advisor
-University ID: T-9090
-Department: CSE
-```
-
-> ⚠️ **Note**: Change these passwords immediately in production!
+## 👥 User Roles & Access
+
+### Admin
+- Full system access
+- User management (students, advisors)
+- Analytics dashboard
+- Manual appointment booking
+- System notices
+- Activity logs
+
+### Advisor
+- Availability management
+- Appointment request handling
+- Meeting minutes recording
+- Resource uploads
+- Student history viewing
+- Schedule management
+
+### Student
+- Advisor browsing
+- Appointment booking
+- Waitlist management
+- Appointment cancellation
+- Resource access
+- Feedback submission
+
+### Middleware Protection
+
+Routes are protected by role-based middleware:
+- `IsAdmin` - Admin-only routes
+- `IsAdvisor` - Advisor-only routes
+- `IsStudent` - Student-only routes
 
 ---
 
 ## 🧪 Testing
 
-### Test Statistics
-
-- **Total Tests**: 201
-- **Passing**: 194 (96.5%)
-- **Failing**: 7 (3.5%)
-- **Total Assertions**: 539+
-- **Test Duration**: ~8.7 seconds
-
-### Current Test Status
-
-⚠️ **Note**: 7 tests are currently failing due to identified bugs. See [BUGS.md](BUGS.md) for details.
-
-**Failed Tests:**
-1. `AdvisorSlotTest::returns error when time range too short for slots` - Session key mismatch
-2. `DashboardTest::admins can access dashboard` - Redirect behavior
-3. `SlotOverlapDetectionTest::overlapping slots are not created` - Session key mismatch
-4. `SlotOverlapDetectionTest::creating slots for today works` - Time validation issue
-5. `StudentAppointmentCancellationTest::student cannot cancel past appointment` - Exception handling
-6. `StudentAppointmentCancellationTest::student cannot cancel declined appointment` - Exception handling
-7. `StudentBookingControllerTest::only active future slots are displayed` - Slot filtering logic
+CAMS includes comprehensive test coverage with 410 passing tests.
 
 ### Run All Tests
 
 ```bash
 composer test
-```
-
-Or manually:
-
-```bash
+# or
 php artisan test
 ```
 
-### Run Specific Test Suite
+### Run Specific Test Suites
 
 ```bash
-# Feature tests
+# Feature tests only
 php artisan test --testsuite=Feature
 
-# Unit tests
+# Unit tests only
 php artisan test --testsuite=Unit
 
 # Specific test file
-php artisan test --filter=WaitlistFeatureTest
+php artisan test tests/Feature/StudentBookingTest.php
 ```
 
-### Run with Coverage
+### Test Coverage Includes
 
-```bash
-php artisan test --coverage
-```
-
-### Test Directory Structure
-
-```
-tests/
-├── Feature/           # Integration tests (18 test files)
-│   ├── Auth/          # Authentication tests (9 files)
-│   ├── AdvisorAppointmentControllerTest.php
-│   ├── AdvisorSlotTest.php
-│   ├── DashboardTest.php
-│   ├── MiddlewareTest.php
-│   ├── ProfileTest.php
-│   ├── SlotOverlapDetectionTest.php
-│   ├── StudentAppointmentHistoryTest.php
-│   ├── StudentBookingControllerTest.php
-│   └── WaitlistFeatureTest.php  # 11 waitlist tests
-├── Unit/              # Unit tests
-│   ├── ModelRelationshipsTest.php
-│   └── ExampleTest.php
-└── TestCase.php       # Base test case
-```
-
-### Test Coverage by Area
-
-| Area | Tests | Coverage |
-|------|-------|----------|
-| Authentication | 29 | Login, registration, password management |
-| Authorization (Middleware) | 16 | Role-based access control |
-| Student Booking | 20 | Advisor search, slot viewing, booking |
-| Advisor Features | 26 | Slot management, appointment handling |
-| Waitlist System | 11 | Join waitlist, notifications, FIFO queue |
-| Slot Overlap Detection | 12 | Time conflict prevention |
-| Dashboard | 12 | Role-specific dashboard views |
-| Profile Management | 8 | CRUD operations |
-| Model Relationships | 16 | Eloquent relationship validation |
-| **File Upload** | 8 | Document upload, validation, storage |
-| **Auto-Cancellation** | 6 | Stale request cleanup, no-show marking |
-
----
-
-## 🐛 Bug Reports
-
-### Comprehensive Bug Analysis
-
-A thorough analysis of the codebase has identified **28 bugs** across different severity levels. All bugs are documented in [BUGS.md](BUGS.md) with:
-- Root cause analysis
-- File locations and line numbers
-- Code examples (current vs. fixed)
-- Severity ratings
-- Fix recommendations
-- Affected tests
-
-### Bug Summary
-
-| Severity | Count | Description |
-|----------|-------|-------------|
-| 🔴 **CRITICAL** | 4 | Broken functionality requiring immediate fix |
-| 🟠 **HIGH** | 7 | Security vulnerabilities and performance issues |
-| 🟡 **MEDIUM** | 13 | Code quality and data integrity issues |
-| 🟢 **LOW** | 4 | Documentation and maintainability improvements |
-
-### Critical Bugs Requiring Immediate Attention
-
-1. **BUG-001: AdminBookingController Broken**
-   - **Impact:** Admin cannot create bookings
-   - **Cause:** Wrong slot status values used ('open' vs 'active')
-   - **Fix Time:** 15 minutes
-
-2. **BUG-002: Error Handling Returns 404 Instead of Redirect**
-   - **Impact:** Student cancellation shows 404 error page
-   - **Cause:** Duplicate exception handlers with abort(404)
-   - **Fix Time:** 10 minutes
-
-3. **BUG-003: Test Failures Due to Session Key Mismatch**
-   - **Impact:** 3 tests failing, users see wrong message type
-   - **Cause:** Returns 'warning' instead of 'error'
-   - **Fix Time:** 5 minutes
-
-4. **BUG-004: Admin Dashboard Redirect Issue**
-   - **Impact:** Tests fail, unexpected redirect behavior
-   - **Cause:** Dashboard redirects admins to admin.dashboard
-   - **Fix Time:** 5 minutes (test fix)
-
-### Report a New Bug
-
-Found a bug not listed in BUGS.md? Please:
-1. Check if it's already documented in [BUGS.md](BUGS.md)
-2. Create a GitHub issue with:
-   - Clear description
-   - Steps to reproduce
-   - Expected vs actual behavior
-   - Screenshots if applicable
-3. Label it with appropriate severity
-
----
-
-## ⚠️ Known Limitations
-
-### Features Not Yet Implemented
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Admin Booking** | ⚠️ Broken | Uses wrong status values (see BUG-001) |
-| **Student Cancellation** | ⚠️ Broken | Returns 404 instead of redirect (see BUG-002) |
-| **Recurring Slots** | Database-ready | `is_recurring` column exists but generation logic incomplete |
-| **Email Verification Enforcement** | Partial | Routes exist but not enforced in workflow |
-| **User Management (Admin)** | 75% Complete | Faculty CRUD works, needs pagination (see BUG-018) |
-| **System Analytics** | Partial | Dashboard exists but has N+1 query (see BUG-006) |
-
-### Planned Enhancements
-
-See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendations, including:
-- Email notifications for booking/approval
-- Calendar integration (.ics file generation)
-- Two-factor authentication
-- Real-time updates with WebSockets
-- Advanced analytics dashboard
-- Mobile app (PWA)
+- Authentication flows (login, registration, password reset)
+- Appointment booking and cancellation
+- Slot creation and management
+- Waitlist functionality
+- Admin CRUD operations
+- Middleware and authorization
+- Activity logging
+- File uploads
+- Email notifications
 
 ---
 
@@ -1166,18 +387,9 @@ See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendatio
 
 ### Production Checklist
 
-⚠️ **IMPORTANT: Do NOT deploy to production before fixing critical bugs!**
+Before deploying to production:
 
-**Pre-Deployment Requirements:**
-1. ✅ Fix all 4 CRITICAL bugs (see BUGS.md)
-2. ✅ Fix all 7 HIGH severity bugs (security & performance)
-3. ✅ All tests passing (currently 7 failing)
-4. ✅ Security audit completed
-5. ✅ Performance testing with large datasets
-
-**After Bug Fixes:**
-
-1. **Environment Configuration**
+1. **Update Environment**
    ```env
    APP_ENV=production
    APP_DEBUG=false
@@ -1189,36 +401,49 @@ See [SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed improvement recommendatio
    php artisan key:generate --force
    ```
 
-3. **Optimize for Production**
+3. **Install Dependencies**
    ```bash
    composer install --optimize-autoloader --no-dev
+   npm install --production
+   ```
+
+4. **Build Assets**
+   ```bash
+   npm run build
+   ```
+
+5. **Optimize Laravel**
+   ```bash
    php artisan config:cache
    php artisan route:cache
    php artisan view:cache
    ```
 
-4. **Build Frontend Assets**
-   ```bash
-   npm run build
-   ```
-
-5. **Set Permissions**
+6. **Set Permissions**
    ```bash
    chmod -R 755 storage bootstrap/cache
+   chown -R www-data:www-data storage bootstrap/cache
    ```
 
-6. **Configure Web Server**
+7. **Configure Web Server**
    - Point document root to `CAMS/public`
-   - Configure HTTPS
-   - Set up proper rewrite rules
+   - Configure HTTPS with SSL certificate
+   - Set up proper URL rewrite rules
 
-7. **Enable Scheduled Commands**
+8. **Set Up Cron Jobs**
    ```bash
-   # Add to crontab for auto-cancellation
-   * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+   * * * * * cd /path-to-cams && php artisan schedule:run >> /dev/null 2>&1
    ```
 
-### Nginx Configuration Example
+9. **Configure Queue Worker**
+   ```bash
+   # Using supervisor (recommended)
+   sudo supervisorctl start cams-worker
+   ```
+
+### Web Server Configuration
+
+#### Nginx Example
 
 ```nginx
 server {
@@ -1230,7 +455,6 @@ server {
     add_header X-Content-Type-Options "nosniff";
 
     index index.php;
-
     charset utf-8;
 
     location / {
@@ -1254,110 +478,122 @@ server {
 }
 ```
 
+#### Apache Example
+
+```apache
+<VirtualHost *:80>
+    ServerName your-domain.com
+    DocumentRoot /var/www/CAMS/public
+
+    <Directory /var/www/CAMS/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/cams-error.log
+    CustomLog ${APACHE_LOG_DIR}/cams-access.log combined
+</VirtualHost>
+```
+
+---
+
+## 📚 Documentation
+
+Additional documentation is available:
+
+- **[BUGS.md](BUGS.md)** - Known issues and bug status (12 low-priority items remaining)
+- **[CAMS/TEST_REPORT.md](CAMS/TEST_REPORT.md)** - Detailed test coverage report
+- **[CAMS/QA_SUMMARY.md](CAMS/QA_SUMMARY.md)** - Quality assurance summary
+- **[CAMS/SUGGESTIONS.md](CAMS/SUGGESTIONS.md)** - Future feature recommendations
+- **[PROJECT_STATUS_REPORT.md](PROJECT_STATUS_REPORT.md)** - Project status overview
+- **[COMPREHENSIVE_TEST_REPORT.md](COMPREHENSIVE_TEST_REPORT.md)** - Comprehensive testing details
+
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! Please follow these guidelines:
+
+### How to Contribute
 
 1. **Fork the Repository**
    ```bash
-   git fork https://github.com/5h444n/Counseling-Appointment-Management-System.git
+   git clone https://github.com/your-username/Counseling-Appointment-Management-System.git
    ```
 
 2. **Create a Feature Branch**
    ```bash
-   git checkout -b feature/amazing-feature
+   git checkout -b feature/your-feature-name
    ```
 
 3. **Make Your Changes**
+   - Write clean, documented code
    - Follow PSR-12 coding standards
-   - Write meaningful commit messages
    - Add tests for new features
+   - Update documentation as needed
 
 4. **Run Tests**
    ```bash
    composer test
+   ./vendor/bin/pint  # Code style fixer
    ```
 
-5. **Format Code**
+5. **Commit Your Changes**
    ```bash
-   ./vendor/bin/pint
+   git add .
+   git commit -m "Add: your feature description"
    ```
 
-6. **Commit Your Changes**
+6. **Push to Your Fork**
    ```bash
-   git commit -m "Add: Amazing new feature"
+   git push origin feature/your-feature-name
    ```
 
-7. **Push to Your Fork**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
+7. **Open a Pull Request**
+   - Provide a clear description of changes
+   - Reference any related issues
+   - Ensure all tests pass
 
-8. **Open a Pull Request**
+### Code Style
 
-### Commit Message Convention
+This project follows PSR-12 coding standards. Run Laravel Pint before committing:
 
+```bash
+./vendor/bin/pint
 ```
-Add: New feature description
-Fix: Bug fix description
-Update: Modification description
-Remove: Removal description
-Docs: Documentation changes
-Style: Code style changes (formatting, etc.)
-Refactor: Code refactoring
-Test: Adding or updating tests
-```
+
+### Reporting Issues
+
+Found a bug? Please open an issue with:
+- Clear description of the problem
+- Steps to reproduce
+- Expected vs actual behavior
+- System information (PHP version, Laravel version, etc.)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Ahnaf Abid Shan
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+This project is open-sourced software licensed under the [MIT License](LICENSE).
 
 ---
 
-## 🙏 Acknowledgements
+## 🙏 Acknowledgments
 
+Built with:
 - [Laravel](https://laravel.com) - The PHP Framework for Web Artisans
 - [Tailwind CSS](https://tailwindcss.com) - A utility-first CSS framework
-- [Alpine.js](https://alpinejs.dev) - A rugged, minimal JavaScript framework
-- [Vite](https://vitejs.dev) - Next generation frontend tooling
-- [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze) - Authentication scaffolding
+- [Alpine.js](https://alpinejs.dev) - Your new, lightweight, JavaScript framework
+- [Vite](https://vitejs.dev) - Next Generation Frontend Tooling
 
 ---
 
-<p align="center">
-  Made with ❤️ for better academic counseling
-</p>
+## 📞 Support
 
-<p align="center">
-  <a href="https://github.com/5h444n/Counseling-Appointment-Management-System/issues">Report Bug</a>
-  ·
-  <a href="https://github.com/5h444n/Counseling-Appointment-Management-System/issues">Request Feature</a>
-</p>
+For questions, issues, or feature requests:
+- **Issues**: [GitHub Issues](https://github.com/5h444n/Counseling-Appointment-Management-System/issues)
+- **Repository**: [GitHub Repository](https://github.com/5h444n/Counseling-Appointment-Management-System)
+
+---
+
+<p align="center">Made with ❤️ for educational institutions</p>
