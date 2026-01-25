@@ -102,12 +102,20 @@ class AdminBookingController extends Controller
         $appointment = Appointment::findOrFail($id);
         $slot = $appointment->slot;
 
+        // Log the deletion
+        \Illuminate\Support\Facades\Log::info('Admin deleted appointment', [
+            'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+            'appointment_id' => $appointment->id,
+            'student_id' => $appointment->student_id,
+            'token' => $appointment->token
+        ]);
+
         // Delete appointment
         $appointment->delete();
 
         // Free up the slot
         if ($slot) {
-            $slot->update(['status' => 'active']); // Fixed: reset to 'active'
+            $slot->update(['status' => 'active']);
         }
 
         return back()->with('success', 'Appointment deleted and slot freed successfully.');

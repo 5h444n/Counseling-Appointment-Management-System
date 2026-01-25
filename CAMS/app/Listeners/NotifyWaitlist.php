@@ -31,20 +31,21 @@ class NotifyWaitlist
     {
         $slot = $event->slot;
 
-        // Get all students on waitlist
-        $entries = Waitlist::where('slot_id', $slot->id)
+        // Get the first student in line (oldest entry)
+        $firstEntry = Waitlist::where('slot_id', $slot->id)
             ->with('student')
-            ->get();
+            ->oldest()
+            ->first();
 
-        foreach ($entries as $entry) {
-            if ($entry->student) {
-                // Notify via Database (and Mail if configured in Notification class)
-                $entry->student->notify(new \App\Notifications\SlotAvailable($slot));
-            }
-        }
-
-        if ($entries->isNotEmpty()) {
-            Log::info("Waitlist: Notified {$entries->count()} students for freed slot {$slot->id}");
+        if ($firstEntry && $firstEntry->student) {
+            // Send email notification to the first student
+            \Illuminate\Support\Facades\Mail::to($firstEntry->student->email)
+                ->queue(new \App\Mail\SlotAvailableNotification($slot, $firstEntry->student));
+            
+            // Remove the first student from waitlist
+            $firstEntry->delete();
+            
+            Log::info("Waitlist: Notified student {$firstEntry->student->id} for freed slot {$slot->id} and removed from waitlist");
         }
     }
 }

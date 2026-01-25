@@ -30,7 +30,7 @@ class AdminFacultyController extends Controller
              $query->where('department_id', $request->department_id);
         }
 
-        $faculty = $query->get(); // or paginate
+        $faculty = $query->paginate(20);
         $departments = Department::orderBy('name')->get();
 
         return view('admin.faculty.index', compact('faculty', 'departments'));
@@ -120,6 +120,14 @@ class AdminFacultyController extends Controller
         if ($faculty->slots()->exists()) {
             return back()->with('error', 'Cannot delete faculty with existing appointment slots. Please delete their slots first.');
         }
+
+        // Log the deletion
+        \Illuminate\Support\Facades\Log::info('Admin deleted faculty', [
+            'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+            'faculty_id' => $faculty->id,
+            'faculty_email' => $faculty->email,
+            'faculty_name' => $faculty->name
+        ]);
 
         $faculty->delete();
 

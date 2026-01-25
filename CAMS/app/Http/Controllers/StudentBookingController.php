@@ -55,9 +55,9 @@ class StudentBookingController extends Controller
     {
         $advisor = User::where('role', 'advisor')->with('department')->findOrFail($advisorId);
 
-        // Fetch slots that are Active (Open) OR Blocked (to show Waitlist option)
+        // Fetch only active future slots for booking
         $slots = AppointmentSlot::where('advisor_id', $advisorId)
-            ->whereIn('status', ['active', 'blocked']) // Include blocked slots for waitlist feature
+            ->where('status', 'active')
             ->where('start_time', '>', now())
             ->orderBy('start_time', 'asc')
             ->get();
@@ -146,6 +146,8 @@ class StudentBookingController extends Controller
                 if ($request->hasFile('document')) {
                     $file = $request->file('document');
                     $originalName = $file->getClientOriginalName();
+                    // Sanitize filename to prevent path traversal
+                    $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $originalName);
                     
                     // Store file in storage/app/public/appointment_documents
                     $filePath = $file->store('appointment_documents', 'public');
@@ -154,10 +156,10 @@ class StudentBookingController extends Controller
                     AppointmentDocument::create([
                         'appointment_id' => $appointment->id,
                         'file_path' => $filePath,
-                        'original_name' => $originalName,
+                        'original_name' => $safeName,
                     ]);
                     
-                    Log::info('Document uploaded', ['appointment_id' => $appointment->id, 'file' => $originalName]);
+                    Log::info('Document uploaded', ['appointment_id' => $appointment->id, 'file' => $safeName]);
                 }
 
                 // 8. Update Slot Status
@@ -275,24 +277,8 @@ class StudentBookingController extends Controller
         try {
             DB::transaction(function () use ($id) {
                 // Lock the appointment row for update to prevent race conditions
-                // Use lockForUpdate to prevent concurrent cancellations
-                // Lock the appointment row to prevent concurrent cancellations
                 $appointment = Appointment::where('id', $id)
                     ->where('student_id', Auth::id())
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                // Re-check status inside transaction after acquiring lock
-                if (!in_array($appointment->status, ['pending', 'approved'])) {
-                    throw new \RuntimeException('This appointment cannot be cancelled.');
-                }
-
-                // Lock and load the slot to check time
-                $slot = AppointmentSlot::where('id', $appointment->slot_id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-                // Lock the slot row as well to prevent race conditions
-                $slot = AppointmentSlot::where('id', $appointment->slot_id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
@@ -301,13 +287,21 @@ class StudentBookingController extends Controller
                     throw new \RuntimeException('Only pending or approved appointments can be cancelled.');
                 }
 
+                // Lock and load the slot to check time
+                $slot = AppointmentSlot::where('id', $appointment->slot_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // Prevent cancelling past appointments
+                if ($slot->start_time <= now()) {
+                    throw new \RuntimeException('Cannot cancel appointments that have already started or are in the past.');
+                }
+
                 // 1. Update appointment status to cancelled
                 $appointment->update(['status' => 'cancelled']);
 
                 // 2. Free up the slot
                 $slot->update(['status' => 'active']);
-                $slot->status = 'active';
-                $slot->save();
 
                 // 3. Fire event to notify waitlist
                 event(new SlotFreedUp($slot));
@@ -324,14 +318,8 @@ class StudentBookingController extends Controller
             // Appointment not found or doesn't belong to this student
             abort(404);
         } catch (\RuntimeException $e) {
-            // Business logic validation failures
-            // Appointment not found or doesn't belong to this student - return 404
-            abort(404);
-        } catch (\RuntimeException $e) {
-            // Business logic validation failures
-            // Re-throw to let Laravel's exception handler return 404
-            throw $e;
-        } catch (\RuntimeException $e) {
+            // Business logic validation failures (past appointments, declined appointments, etc.)
+            Log::warning("Appointment cancellation failed: " . $e->getMessage());
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Cancel Failed: ' . $e->getMessage());
