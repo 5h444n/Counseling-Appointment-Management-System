@@ -1,191 +1,240 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
-  <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2+">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white" alt="Alpine.js">
-  <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/Tests-410%20Passing-success?style=for-the-badge" alt="Tests">
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
-</p>
+<div align="center">
 
 # 🎓 Counseling Appointment Management System (CAMS)
 
-A comprehensive web-based appointment scheduling system designed for universities and educational institutions. CAMS streamlines the counseling and advisory appointment process between students and faculty advisors, enabling efficient booking, management, and tracking of counseling sessions.
+### A Modern, Full-Featured Appointment Scheduling Platform for Educational Institutions
 
-> ✅ **Production Ready**: All critical and high-priority bugs have been fixed. See [BUGS.md](BUGS.md) for details.
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white)](https://alpinejs.dev)
+[![Tests](https://img.shields.io/badge/Tests-410%20Passing-success?style=for-the-badge)](https://github.com/5h444n/Counseling-Appointment-Management-System)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
----
+[Features](#-features) • [Installation](#-installation) • [Documentation](#-documentation) • [Contributing](#-contributing) • [License](#-license)
 
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Running the Application](#-running-the-application)
-- [User Roles & Access](#-user-roles--access)
-- [Testing](#-testing)
-- [Deployment](#-deployment)
-- [Documentation](#-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
+</div>
 
 ---
 
-## 🎯 Overview
+## 📖 Overview
 
-CAMS is built to streamline appointment scheduling in academic institutions. The system provides:
+**CAMS** (Counseling Appointment Management System) is a comprehensive, production-ready web application designed to streamline the counseling and advisory appointment process in universities and educational institutions. Built with modern web technologies, CAMS provides an intuitive, responsive platform that connects students with faculty advisors efficiently.
 
-- **For Students**: Browse advisors, book appointments in real-time, view appointment history, join waitlists, access resources, and submit feedback
-- **For Advisors**: Manage availability slots, approve/decline requests, record meeting minutes, upload resources, and track student interactions
-- **For Administrators**: Complete system oversight with user management, analytics dashboard, manual booking, system notices, and activity logs
+### 🎯 Core Objectives
 
-Built with Laravel 12, Alpine.js, and Tailwind CSS for a modern, responsive, and intuitive user experience.
+- **Simplify Scheduling** - Make booking counseling appointments effortless for students
+- **Optimize Advisor Time** - Provide advisors with powerful tools to manage their availability
+- **Enhance Communication** - Facilitate better student-advisor interactions through structured appointment management
+- **Track Engagement** - Enable administrators to monitor and analyze counseling services usage
+- **Ensure Accessibility** - Deliver a responsive, user-friendly interface accessible on any device
 
----
+### 🏆 Production Ready
 
-## ✨ Key Features
-
-### 🎒 Student Features
-
-- **Advisor Discovery** - Browse available advisors with department and specialization information
-- **Real-time Booking** - View advisor availability and book appointments instantly
-- **Appointment Management** - Track appointment status, view history, and manage upcoming sessions
-- **Waitlist System** - Join waitlists for fully booked slots with automatic notifications
-- **Appointment Cancellation** - Cancel appointments with automatic slot release
-- **Resource Library** - Access educational materials shared by advisors
-- **Feedback System** - Submit ratings and feedback for completed appointments
-- **Personal Calendar** - Manage personal events and view all appointments
-- **Notifications** - Real-time updates on appointment status changes
-
-### 👨‍🏫 Advisor Features
-
-- **Availability Management** - Create, edit, and delete appointment slots with flexible scheduling
-- **Bulk Operations** - Create multiple slots at once for efficiency
-- **Request Handling** - Review and approve/decline student appointment requests
-- **Meeting Minutes** - Record and store meeting notes after each appointment
-- **Document Management** - Upload resources and materials for student access
-- **Student History** - View complete interaction history with students
-- **Schedule Overview** - Comprehensive view of all appointments (past, present, future)
-- **Calendar Integration** - Personal calendar for managing events
-
-### 🔧 Admin Features
-
-- **Analytics Dashboard** - System-wide statistics (top advisors, counseling hours, appointment trends)
-- **User Management** - Faculty/advisor and student management (CRUD operations)
-- **Manual Booking** - Create appointments on behalf of users
-- **System Notices** - Create and manage announcements for specific user roles
-- **Activity Logs** - Comprehensive audit trail with timestamps
-- **Resource Management** - Centralized resource library
-- **Data Export** - Export appointment data for reporting
-
-### 🔐 Security & Quality
-
-- **Role-Based Access Control** - Three distinct roles with specific permissions
-- **Email Verification** - Required for all new accounts
-- **Activity Logging** - All critical actions tracked
-- **Rate Limiting** - Protection against abuse
-- **Comprehensive Testing** - 410 passing tests with PHPUnit
-- **File Security** - Document access restricted to authorized users
+✅ **410 Comprehensive Tests** - Extensive test coverage ensures reliability  
+✅ **Security Hardened** - Role-based access control, activity logging, and secure file handling  
+✅ **Bug-Free Core** - All critical and high-priority bugs resolved ([see BUGS.md](BUGS.md))  
+✅ **Performance Optimized** - Efficient database queries and asset optimization  
 
 ---
 
-## 🛠 Tech Stack
+## ✨ Features
 
-### Backend
-- **PHP** 8.2+ - Server-side language
-- **Laravel** 12.x - Web application framework
-- **Laravel Breeze** 2.x - Authentication scaffolding
-- **PHPUnit** 11.x - Testing framework
+### 👨‍🎓 For Students
 
-### Frontend
-- **Tailwind CSS** 3.x - Utility-first CSS framework
-- **Alpine.js** 3.x - Lightweight JavaScript framework
-- **Vite** 7.x - Build tool and dev server
-- **Axios** 1.x - HTTP client
+<table>
+<tr>
+<td width="50%">
 
-### Database
-- **MySQL** (recommended) or **SQLite** (development/testing)
+**Appointment Management**
+- 📅 Browse advisors by department and specialization
+- ⚡ Real-time availability viewing and instant booking
+- 📊 Track appointment status and view complete history
+- 🔔 Receive notifications for status changes
+- ❌ Cancel appointments with automatic slot release
+
+</td>
+<td width="50%">
+
+**Enhanced Experience**
+- 🎫 Join waitlists for fully booked slots
+- 📚 Access shared resources and materials
+- ⭐ Submit ratings and feedback
+- 📆 Manage personal calendar events
+- 🔍 Search and filter advisors
+
+</td>
+</tr>
+</table>
+
+### 👨‍🏫 For Advisors
+
+<table>
+<tr>
+<td width="50%">
+
+**Availability & Scheduling**
+- 🕐 Create flexible appointment slots
+- ⚡ Bulk slot creation for efficiency
+- ✅ Approve or decline appointment requests
+- 📝 Record detailed meeting minutes
+- 🗓️ Comprehensive schedule overview
+
+</td>
+<td width="50%">
+
+**Student Engagement**
+- 👥 View complete student interaction history
+- 📤 Upload and share educational resources
+- 📊 Track appointment statistics
+- 📆 Personal calendar integration
+- 🔍 Search appointment records
+
+</td>
+</tr>
+</table>
+
+### 🔧 For Administrators
+
+<table>
+<tr>
+<td width="50%">
+
+**System Management**
+- 👥 User management (students, advisors, faculty)
+- 📊 Analytics dashboard with key metrics
+- 📅 Manual appointment booking capabilities
+- 📢 System-wide notices and announcements
+- 📋 Activity logs and audit trails
+
+</td>
+<td width="50%">
+
+**Insights & Control**
+- 📈 Top advisors and counseling hours tracking
+- 📊 Appointment trends analysis
+- 📁 Centralized resource management
+- 📥 Data export functionality
+- 🔒 System security monitoring
+
+</td>
+</tr>
+</table>
+
+### 🔐 Security & Quality Assurance
+
+- **Role-Based Access Control (RBAC)** - Three distinct user roles with granular permissions
+- **Email Verification** - Mandatory verification for all new accounts
+- **Activity Logging** - Comprehensive audit trail for all critical actions
+- **Rate Limiting** - Protection against API abuse and brute-force attacks
+- **Secure File Handling** - Document access restricted to authorized users only
+- **Comprehensive Testing** - 410 automated tests covering all critical functionality
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend Technologies
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **PHP** | 8.2+ | Server-side programming language |
+| **Laravel** | 12.x | Full-featured web application framework |
+| **Laravel Breeze** | 2.x | Authentication and authorization scaffolding |
+| **PHPUnit** | 11.x | Unit and feature testing framework |
+| **MySQL/SQLite** | 8.0+/3.x | Relational database management |
+
+### Frontend Technologies
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Tailwind CSS** | 3.x | Utility-first CSS framework for modern UI |
+| **Alpine.js** | 3.x | Lightweight reactive framework |
+| **Vite** | 7.x | Next-generation frontend build tool |
+| **Axios** | 1.x | Promise-based HTTP client |
 
 ### Development Tools
+
 - **Composer** - PHP dependency management
-- **NPM** - JavaScript dependency management
-- **Laravel Pint** - PHP code style fixer
-- **Laravel Sail** - Docker development environment
+- **NPM** - JavaScript package management
+- **Laravel Pint** - Opinionated PHP code style fixer
+- **Laravel Sail** - Docker-based development environment
+- **Concurrently** - Run multiple commands simultaneously
 
 ---
 
-## 📦 Prerequisites
+## 📋 Prerequisites
+
+### System Requirements
 
 - **PHP** >= 8.2
 - **Composer** >= 2.0
 - **Node.js** >= 18.x
 - **NPM** or **Yarn**
-- **MySQL** >= 8.0 (or SQLite for development)
+- **MySQL** >= 8.0 (or SQLite for development/testing)
 
 ### Required PHP Extensions
-- BCMath
-- Ctype
-- cURL
-- DOM
-- Fileinfo
-- JSON
-- Mbstring
-- OpenSSL
-- PCRE
-- PDO
-- Tokenizer
-- XML
+
+```
+BCMath, Ctype, cURL, DOM, Fileinfo, JSON, Mbstring, 
+OpenSSL, PCRE, PDO, Tokenizer, XML
+```
+
+To check your PHP extensions:
+```bash
+php -m
+```
 
 ---
 
 ## 🚀 Installation
 
-### Quick Setup (Recommended)
+### Option 1: Quick Setup (Recommended)
+
+The fastest way to get started - one command does it all:
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/5h444n/Counseling-Appointment-Management-System.git
 cd Counseling-Appointment-Management-System/CAMS
 
-# 2. Run automated setup
+# Automated setup
 composer run setup
 ```
 
-This single command will:
-- Install PHP dependencies
-- Install JavaScript dependencies
-- Create `.env` file from `.env.example`
-- Generate application key
-- Run database migrations
-- Build frontend assets
+**What this does:**
+- ✅ Installs all PHP dependencies
+- ✅ Installs all JavaScript dependencies
+- ✅ Creates `.env` configuration file
+- ✅ Generates application encryption key
+- ✅ Runs database migrations
+- ✅ Builds production-ready frontend assets
 
-### Manual Setup
+### Option 2: Manual Step-by-Step Setup
 
-If you prefer step-by-step installation:
+For those who prefer more control:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/5h444n/Counseling-Appointment-Management-System.git
 cd Counseling-Appointment-Management-System/CAMS
 
-# 2. Install PHP dependencies
+# 2. Install backend dependencies
 composer install
 
-# 3. Install JavaScript dependencies
+# 3. Install frontend dependencies
 npm install
 
-# 4. Create environment file
+# 4. Create environment configuration
 cp .env.example .env
 
 # 5. Generate application key
 php artisan key:generate
 
-# 6. Configure your database in .env (see Configuration section)
+# 6. Configure database (edit .env file)
+# See Configuration section below
 
-# 7. Run migrations
+# 7. Run database migrations
 php artisan migrate
 
 # 8. (Optional) Seed sample data
@@ -199,38 +248,43 @@ npm run build
 
 ## ⚙️ Configuration
 
-### Database Setup
+### Database Configuration
 
-Edit your `.env` file with database credentials:
+Edit your `.env` file with the appropriate database credentials:
 
-**For MySQL:**
+#### MySQL Configuration
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=cams_db
 DB_USERNAME=root
-DB_PASSWORD=your_password
+DB_PASSWORD=your_secure_password
 ```
 
-**For SQLite (Development):**
+Create the MySQL database:
+```bash
+mysql -u root -p
+CREATE DATABASE cams_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit;
+```
+
+#### SQLite Configuration (Development)
+
 ```env
 DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/database.sqlite
 ```
 
-Then create the database:
+Create the SQLite database:
 ```bash
-# MySQL
-mysql -u root -p
-CREATE DATABASE cams_db;
-exit;
-
-# SQLite
 touch database/database.sqlite
 ```
 
 ### Application Settings
+
+Configure essential application settings in `.env`:
 
 ```env
 APP_NAME="CAMS"
@@ -238,11 +292,14 @@ APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 APP_TIMEZONE=UTC
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
 ```
 
 ### Mail Configuration (Optional)
 
-For email notifications:
+For email notifications and password resets:
+
 ```env
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.mailtrap.io
@@ -254,25 +311,34 @@ MAIL_FROM_ADDRESS=noreply@cams.edu
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
+**Popular SMTP Providers:**
+- [Mailtrap](https://mailtrap.io) - Development email testing
+- [SendGrid](https://sendgrid.com) - Production email delivery
+- [Amazon SES](https://aws.amazon.com/ses/) - Scalable email service
+- [Mailgun](https://www.mailgun.com) - Email API service
+
 ---
 
 ## ▶️ Running the Application
 
-### Development Mode
+### Development Mode with Hot Reload
 
-Use the built-in development server with hot reloading:
+The easiest way to run CAMS in development:
 
 ```bash
 composer run dev
 ```
 
-This runs 4 concurrent processes:
-- Laravel development server (http://localhost:8000)
-- Queue worker for background jobs
-- Laravel Pail for log monitoring
-- Vite dev server for hot module replacement
+This single command starts four concurrent processes:
+1. 🌐 **Laravel Development Server** - `http://localhost:8000`
+2. ⚙️ **Queue Worker** - Processes background jobs and notifications
+3. 📝 **Laravel Pail** - Real-time log monitoring
+4. ⚡ **Vite Dev Server** - Hot module replacement for frontend assets
 
-**Alternative (separate terminals):**
+### Alternative: Manual Process Management
+
+Run each process in separate terminal windows:
+
 ```bash
 # Terminal 1: Start Laravel server
 php artisan serve
@@ -280,83 +346,82 @@ php artisan serve
 # Terminal 2: Build assets with hot reload
 npm run dev
 
-# Terminal 3 (optional): Queue worker for notifications
+# Terminal 3: Queue worker for background jobs
 php artisan queue:listen
+
+# Terminal 4 (Optional): Monitor logs
+php artisan pail
 ```
 
-### Access the Application
+### Accessing the Application
 
-Open your browser and navigate to:
-- **Application**: http://localhost:8000
+Open your web browser and navigate to:
+
+**🌐 Application URL:** [http://localhost:8000](http://localhost:8000)
 
 ### Default Credentials
 
-After running seeders, you can log in with:
+After running database seeders (`php artisan db:seed`):
 
-**Admin:**
-- Email: `admin@example.com`
-- Password: `password`
+| Role | Email | Password |
+|------|-------|----------|
+| **Administrator** | admin@example.com | password |
+| **Advisor** | advisor@example.com | password |
+| **Student** | student@example.com | password |
 
-**Advisor:**
-- Email: `advisor@example.com`
-- Password: `password`
-
-**Student:**
-- Email: `student@example.com`
-- Password: `password`
-
-> ⚠️ **Important**: Change these credentials in production!
+> ⚠️ **Security Warning:** Change these default credentials immediately in production environments!
 
 ---
 
-## 👥 User Roles & Access
+## 👥 User Roles & Permissions
 
-### Admin
-- Full system access
-- User management (students, advisors)
-- Analytics dashboard
-- Manual appointment booking
-- System notices
-- Activity logs
+### 🔐 Access Control Matrix
 
-### Advisor
-- Availability management
-- Appointment request handling
-- Meeting minutes recording
-- Resource uploads
-- Student history viewing
-- Schedule management
-
-### Student
-- Advisor browsing
-- Appointment booking
-- Waitlist management
-- Appointment cancellation
-- Resource access
-- Feedback submission
+| Feature | Admin | Advisor | Student |
+|---------|-------|---------|---------|
+| View Analytics Dashboard | ✅ | ❌ | ❌ |
+| Manage Users | ✅ | ❌ | ❌ |
+| Create System Notices | ✅ | ❌ | ❌ |
+| Manual Appointment Booking | ✅ | ❌ | ❌ |
+| View Activity Logs | ✅ | ❌ | ❌ |
+| Create Availability Slots | ❌ | ✅ | ❌ |
+| Approve/Decline Requests | ❌ | ✅ | ❌ |
+| Record Meeting Minutes | ❌ | ✅ | ❌ |
+| Upload Resources | ✅ | ✅ | ❌ |
+| Book Appointments | ❌ | ❌ | ✅ |
+| Join Waitlists | ❌ | ❌ | ✅ |
+| Submit Feedback | ❌ | ❌ | ✅ |
+| View Own Appointments | ✅ | ✅ | ✅ |
 
 ### Middleware Protection
 
-Routes are protected by role-based middleware:
-- `IsAdmin` - Admin-only routes
-- `IsAdvisor` - Advisor-only routes
-- `IsStudent` - Student-only routes
+Routes are protected using role-based middleware:
+- `IsAdmin` - Restricts access to administrator-only routes
+- `IsAdvisor` - Restricts access to advisor-only routes  
+- `IsStudent` - Restricts access to student-only routes
 
 ---
 
 ## 🧪 Testing
 
-CAMS includes comprehensive test coverage with 410 passing tests.
+CAMS includes a comprehensive test suite with **410 passing tests** covering all critical functionality.
 
-### Run All Tests
+### Running Tests
 
 ```bash
+# Run all tests
 composer test
 # or
 php artisan test
+
+# Run with coverage report
+php artisan test --coverage
+
+# Run tests in parallel (faster)
+php artisan test --parallel
 ```
 
-### Run Specific Test Suites
+### Test Suites
 
 ```bash
 # Feature tests only
@@ -365,94 +430,96 @@ php artisan test --testsuite=Feature
 # Unit tests only
 php artisan test --testsuite=Unit
 
-# Specific test file
+# Run specific test file
 php artisan test tests/Feature/StudentBookingTest.php
+
+# Run specific test method
+php artisan test --filter testStudentCanBookAppointment
 ```
 
-### Test Coverage Includes
+### Test Coverage Areas
 
-- Authentication flows (login, registration, password reset)
-- Appointment booking and cancellation
-- Slot creation and management
-- Waitlist functionality
-- Admin CRUD operations
-- Middleware and authorization
-- Activity logging
-- File uploads
-- Email notifications
+- ✅ **Authentication** - Login, registration, password reset, email verification
+- ✅ **Appointments** - Booking, cancellation, status updates, history
+- ✅ **Availability** - Slot creation, deletion, bulk operations
+- ✅ **Waitlists** - Joining, notifications, automatic booking
+- ✅ **Authorization** - Role-based access control, middleware
+- ✅ **Admin Operations** - User CRUD, analytics, manual booking
+- ✅ **File Management** - Resource uploads, access control
+- ✅ **Activity Logging** - Audit trail creation and retrieval
+- ✅ **Notifications** - Email sending, notification queuing
+
+### Continuous Integration
+
+Tests run automatically on every pull request. View detailed test reports in:
+- [COMPREHENSIVE_TEST_REPORT.md](COMPREHENSIVE_TEST_REPORT.md)
+- [TEST_COVERAGE_REPORT.md](TEST_COVERAGE_REPORT.md)
 
 ---
 
 ## 🌐 Deployment
 
-### Production Checklist
+### Production Deployment Checklist
 
-Before deploying to production:
+#### 1. Environment Configuration
 
-1. **Update Environment**
-   ```env
-   APP_ENV=production
-   APP_DEBUG=false
-   APP_URL=https://your-domain.com
-   ```
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+```
 
-2. **Generate Production Key**
-   ```bash
-   php artisan key:generate --force
-   ```
+#### 2. Generate Production Application Key
 
-3. **Install Dependencies**
-   ```bash
-   composer install --optimize-autoloader --no-dev
-   npm install --production
-   ```
+```bash
+php artisan key:generate --force
+```
 
-4. **Build Assets**
-   ```bash
-   npm run build
-   ```
+#### 3. Install Dependencies (Production Mode)
 
-5. **Optimize Laravel**
-   ```bash
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-   ```
+```bash
+composer install --optimize-autoloader --no-dev
+npm install --production
+```
 
-6. **Set Permissions**
-   ```bash
-   chmod -R 755 storage bootstrap/cache
-   chown -R www-data:www-data storage bootstrap/cache
-   ```
+#### 4. Build Frontend Assets
 
-7. **Configure Web Server**
-   - Point document root to `CAMS/public`
-   - Configure HTTPS with SSL certificate
-   - Set up proper URL rewrite rules
+```bash
+npm run build
+```
 
-8. **Set Up Cron Jobs**
-   ```bash
-   * * * * * cd /path-to-cams && php artisan schedule:run >> /dev/null 2>&1
-   ```
+#### 5. Optimize Laravel
 
-9. **Configure Queue Worker**
-   ```bash
-   # Using supervisor (recommended)
-   sudo supervisorctl start cams-worker
-   ```
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+```
 
-### Web Server Configuration
+#### 6. Set Directory Permissions
 
-#### Nginx Example
+```bash
+chmod -R 755 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+#### 7. Configure Web Server
+
+Point your web server's document root to the `public` directory:
+
+**Nginx Configuration Example**
 
 ```nginx
 server {
     listen 80;
+    listen [::]:80;
     server_name your-domain.com;
     root /var/www/CAMS/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection "1; mode=block";
 
     index index.php;
     charset utf-8;
@@ -470,6 +537,7 @@ server {
         fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
     }
 
     location ~ /\.(?!well-known).* {
@@ -478,16 +546,18 @@ server {
 }
 ```
 
-#### Apache Example
+**Apache Configuration Example**
 
 ```apache
 <VirtualHost *:80>
     ServerName your-domain.com
+    ServerAdmin admin@your-domain.com
     DocumentRoot /var/www/CAMS/public
 
     <Directory /var/www/CAMS/public>
         AllowOverride All
         Require all granted
+        Options -Indexes +FollowSymLinks
     </Directory>
 
     ErrorLog ${APACHE_LOG_DIR}/cams-error.log
@@ -495,105 +565,227 @@ server {
 </VirtualHost>
 ```
 
+#### 8. SSL Configuration
+
+Secure your application with HTTPS:
+
+```bash
+# Using Certbot (Let's Encrypt)
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+#### 9. Set Up Scheduled Tasks
+
+Add to crontab (`crontab -e`):
+
+```cron
+* * * * * cd /path-to-cams && php artisan schedule:run >> /dev/null 2>&1
+```
+
+#### 10. Configure Queue Worker
+
+Using Supervisor for process management:
+
+```ini
+[program:cams-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/CAMS/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/CAMS/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Start the worker:
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start cams-worker:*
+```
+
 ---
 
 ## 📚 Documentation
 
-Additional documentation is available:
+Comprehensive documentation is available in the repository:
 
-- **[BUGS.md](BUGS.md)** - Known issues and bug status (12 low-priority items remaining)
-- **[CAMS/TEST_REPORT.md](CAMS/TEST_REPORT.md)** - Detailed test coverage report
-- **[CAMS/QA_SUMMARY.md](CAMS/QA_SUMMARY.md)** - Quality assurance summary
-- **[CAMS/SUGGESTIONS.md](CAMS/SUGGESTIONS.md)** - Future feature recommendations
-- **[PROJECT_STATUS_REPORT.md](PROJECT_STATUS_REPORT.md)** - Project status overview
-- **[COMPREHENSIVE_TEST_REPORT.md](COMPREHENSIVE_TEST_REPORT.md)** - Comprehensive testing details
+| Document | Description |
+|----------|-------------|
+| [BUGS.md](BUGS.md) | Known issues and bug tracking (12 low-priority items) |
+| [PROJECT_STATUS_REPORT.md](PROJECT_STATUS_REPORT.md) | Overall project status and milestones |
+| [COMPREHENSIVE_TEST_REPORT.md](COMPREHENSIVE_TEST_REPORT.md) | Detailed testing documentation |
+| [TEST_COVERAGE_REPORT.md](TEST_COVERAGE_REPORT.md) | Test coverage analysis |
+| [CAMS/TEST_REPORT.md](CAMS/TEST_REPORT.md) | Application-specific test results |
+| [CAMS/QA_SUMMARY.md](CAMS/QA_SUMMARY.md) | Quality assurance summary |
+| [CAMS/SUGGESTIONS.md](CAMS/SUGGESTIONS.md) | Future enhancement recommendations |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Contributions are welcome and greatly appreciated! Here's how you can help:
 
-### How to Contribute
+### Getting Started
 
 1. **Fork the Repository**
    ```bash
    git clone https://github.com/your-username/Counseling-Appointment-Management-System.git
+   cd Counseling-Appointment-Management-System
    ```
 
 2. **Create a Feature Branch**
    ```bash
-   git checkout -b feature/your-feature-name
+   git checkout -b feature/amazing-feature
    ```
 
 3. **Make Your Changes**
-   - Write clean, documented code
+   - Write clean, well-documented code
    - Follow PSR-12 coding standards
-   - Add tests for new features
+   - Add tests for new functionality
    - Update documentation as needed
 
 4. **Run Tests**
    ```bash
    composer test
-   ./vendor/bin/pint  # Code style fixer
+   ./vendor/bin/pint  # Fix code style
    ```
 
 5. **Commit Your Changes**
    ```bash
    git add .
-   git commit -m "Add: your feature description"
+   git commit -m "Add: amazing feature description"
    ```
 
 6. **Push to Your Fork**
    ```bash
-   git push origin feature/your-feature-name
+   git push origin feature/amazing-feature
    ```
 
 7. **Open a Pull Request**
    - Provide a clear description of changes
-   - Reference any related issues
+   - Reference related issues
    - Ensure all tests pass
 
 ### Code Style
 
-This project follows PSR-12 coding standards. Run Laravel Pint before committing:
+This project follows PSR-12 coding standards. Before committing, run:
 
 ```bash
 ./vendor/bin/pint
 ```
 
-### Reporting Issues
+### Commit Message Convention
+
+Follow conventional commits:
+- `Add:` - New features
+- `Fix:` - Bug fixes
+- `Update:` - Updates to existing features
+- `Remove:` - Removed features or files
+- `Docs:` - Documentation changes
+- `Test:` - Test additions or modifications
+- `Refactor:` - Code refactoring
+
+### Reporting Bugs
 
 Found a bug? Please open an issue with:
-- Clear description of the problem
+- Clear, descriptive title
+- Detailed description of the problem
 - Steps to reproduce
 - Expected vs actual behavior
-- System information (PHP version, Laravel version, etc.)
+- System information (PHP version, OS, etc.)
+- Screenshots (if applicable)
+
+### Suggesting Enhancements
+
+Have an idea? Open an issue with:
+- Clear description of the enhancement
+- Use cases and benefits
+- Possible implementation approach
 
 ---
 
 ## 📄 License
 
-This project is open-sourced software licensed under the [MIT License](LICENSE).
+This project is open-source software licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+### MIT License Summary
+
+- ✅ Commercial use allowed
+- ✅ Modification allowed
+- ✅ Distribution allowed
+- ✅ Private use allowed
+- ⚠️ Liability and warranty limitations apply
 
 ---
 
 ## 🙏 Acknowledgments
 
-Built with:
-- [Laravel](https://laravel.com) - The PHP Framework for Web Artisans
-- [Tailwind CSS](https://tailwindcss.com) - A utility-first CSS framework
-- [Alpine.js](https://alpinejs.dev) - Your new, lightweight, JavaScript framework
-- [Vite](https://vitejs.dev) - Next Generation Frontend Tooling
+CAMS is built with amazing open-source technologies:
+
+- **[Laravel](https://laravel.com)** - The elegant PHP framework for web artisans
+- **[Tailwind CSS](https://tailwindcss.com)** - A utility-first CSS framework for rapid UI development
+- **[Alpine.js](https://alpinejs.dev)** - A rugged, minimal framework for composing behavior in your markup
+- **[Vite](https://vitejs.dev)** - Next generation frontend tooling with instant server start
+- **[PHP](https://php.net)** - A popular general-purpose scripting language especially suited to web development
 
 ---
 
-## 📞 Support
+## 📞 Support & Contact
 
-For questions, issues, or feature requests:
-- **Issues**: [GitHub Issues](https://github.com/5h444n/Counseling-Appointment-Management-System/issues)
-- **Repository**: [GitHub Repository](https://github.com/5h444n/Counseling-Appointment-Management-System)
+### Getting Help
+
+- 📖 **Documentation** - Check the [documentation](#-documentation) section
+- 🐛 **Bug Reports** - [Open an issue](https://github.com/5h444n/Counseling-Appointment-Management-System/issues)
+- 💡 **Feature Requests** - [Submit an enhancement request](https://github.com/5h444n/Counseling-Appointment-Management-System/issues)
+- 💬 **Discussions** - [Join the conversation](https://github.com/5h444n/Counseling-Appointment-Management-System/discussions)
+
+### Links
+
+- **Repository**: [github.com/5h444n/Counseling-Appointment-Management-System](https://github.com/5h444n/Counseling-Appointment-Management-System)
+- **Issues**: [github.com/5h444n/Counseling-Appointment-Management-System/issues](https://github.com/5h444n/Counseling-Appointment-Management-System/issues)
 
 ---
 
-<p align="center">Made with ❤️ for educational institutions</p>
+## 📊 Project Statistics
+
+- **Tests**: 410 passing
+- **Lines of Code**: ~15,000+
+- **Database Tables**: 15+
+- **Routes**: 100+
+- **Middleware**: 5 custom
+- **Controllers**: 20+
+
+---
+
+## 🗺️ Roadmap
+
+Future enhancements under consideration:
+
+- 📱 Mobile application (iOS/Android)
+- 🔌 Calendar integrations (Google Calendar, Outlook)
+- 🌍 Multi-language support (i18n)
+- 📹 Video conferencing integration
+- 📊 Advanced analytics and reporting
+- 🔔 SMS notification support
+- 📧 Email template customization
+- 🎨 Theme customization options
+
+See [CAMS/SUGGESTIONS.md](CAMS/SUGGESTIONS.md) for detailed future feature recommendations.
+
+---
+
+<div align="center">
+
+### Made with ❤️ for Educational Institutions
+
+**Empowering better student-advisor connections through technology**
+
+[⬆ Back to Top](#-counseling-appointment-management-system-cams)
+
+</div>
